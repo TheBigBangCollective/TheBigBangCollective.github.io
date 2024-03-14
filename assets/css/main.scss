@@ -1,0 +1,114 @@
+---
+search: false
+---
+
+@charset "utf-8";
+
+@import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
+@import "minimal-mistakes"; // main partials
+
+/* Dropdown Button */
+.dropbtn {
+    width: 100%;
+    background-color: black;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+  }
+  
+  /* The container <div> - needed to position the dropdown content */
+  .dropdown {
+    position: relative;
+    display: block;
+    margin-bottom: 20px;
+  }
+  
+  /* Dropdown Content (Hidden by Default) */
+  .dropdown-content {
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    position: static;
+    background-color: #f9f9f9;
+    text-align: center;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  
+  /* Links inside the dropdown */
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  /* Change color of dropdown links on hover */
+  .dropdown-content a:hover {background-color: #f1f1f1}
+  
+  /* Show the dropdown menu on hover */
+  .dropdown:hover .dropdown-content {
+    animation: expand 0.5s ease forwards;
+
+  }
+  @keyframes expand {
+    from {
+        max-height: 0;
+    }
+    to{
+        max-height: 170px;
+    }
+  }
+  
+  /* Change the background color of the dropdown button when the dropdown content is shown */
+  .dropdown:hover .dropbtn {
+    background-color: red;
+  }
+
+  .styled-button {
+    background-color: #000000; /* Sets the button background color to black */
+    color: white; /* Ensures the text color is white for contrast */
+    padding: 16px; /* Increases padding to make the button thicker */
+    font-size: 18px; /* Increases the font size to contribute to a thicker appearance */
+    border: none; /* Removes any default border */
+    cursor: pointer; /* Changes the cursor on hover to indicate it's clickable */
+    text-align: center; /* Centers the text inside the button */
+    display: inline-block; /* Allows you to set the width and margin if necessary */
+    width: 100%; /* Adjusts the width to fit the content by default, can be set to 100% if full width is desired */
+    margin-bottom: 10px; /* Adds some space below the button */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+    margin-bottom: 20px;
+  }
+  
+  .styled-button:hover {
+    background-color: red; /* Dark gray color on hover for feedback */
+  }
+  .video-background {
+    position: relative;
+    width: 100%; /* Cover the full width */
+    height: 400px; /* Adjust height as needed */
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  @media only screen and (max-width:600px){
+    .video-background{
+      height: 250px;
+    }
+  }
+
+  .video-background video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -1; /* Ensure video stays in the background */
+  }
+  
