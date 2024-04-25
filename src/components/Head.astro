@@ -7,6 +7,19 @@ import bungee400 from '@fontsource/bungee-inline/files/bungee-inline-latin-400-n
 
 
 const { title } = Astro.props;
+const description = `
+Welcome to the Big Bang Collective, an exhilarating convergence of minds and 
+ideas that lights up the world of science, technology, engineering, 
+and mathematics (STEM). Each year, our festival embarks on a 
+mission to ignite passion, curiosity, and innovation among 
+attendees. With a vibrant tapestry of events, workshops, and live
+demonstrations, the festival program is meticulously designed to 
+appeal to young enthusiasts, educators, and professionals alike. 
+It serves as a dynamic platform for exploring the latest breakthroughs, 
+engaging in thought-provoking discussions, and participating in hands-on 
+activities that bring STEM concepts to life.
+`
+
 ---
 <meta charset="UTF-8" />
 <meta name="description" content="Astro description" />
@@ -24,3 +37,20 @@ const { title } = Astro.props;
 <link rel="preload" href={lora400} as="font" type="font/woff2" crossorigin/>
 <link rel="preload" href={lora600} as="font" type="font/woff2" crossorigin/>
 <link rel="preload" href={bungee400} as="font" type="font/woff2" crossorigin/>
+
+<meta name="title" content={title} />
+<meta name="description" content={description} />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content={Astro.url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<!-- <meta property="og:image" content={new URL(image, Astro.url)} /> -->
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary" />
+<meta property="twitter:url" content={Astro.url} />
+<meta property="twitter:title" content={title} />
+<meta property="twitter:description" content={description} />
+<!-- <meta property="twitter:image" content={new URL(image, Astro.url)} /> -->
