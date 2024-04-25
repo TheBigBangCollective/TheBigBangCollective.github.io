@@ -6,7 +6,7 @@ class Particle {
         this.y = y;
         this.velocityX = Math.random() * 5;
         this.velocityY = Math.random() * 5;
-        this.mass = Math.random() * 5;
+        this.mass = Math.random() * 3;
         this.charge = Math.floor(Math.random() * 2);
         this.isCharged = this.charge !== 0;
         this.energyLossFactor = 0.995; // Factor to simulate energy loss per second
