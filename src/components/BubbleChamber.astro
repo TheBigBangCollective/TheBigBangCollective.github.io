@@ -1,0 +1,22 @@
+---
+---
+<canvas id="bubbleCanvas"></canvas>
+<script>
+    import { init } from '../util/bubble.js';
+    document.addEventListener('DOMContentLoaded', function() {
+        const canvas = document.getElementById('bubbleCanvas');
+        if (canvas) {
+            init(canvas);
+        }
+    });
+</script>
+<style>
+    #bubbleCanvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
+    }
+</style>
