@@ -1,51 +1,43 @@
 ---
-interface Props {
-	title: string;
-}
+import "../styles/global.css";
+import "@fontsource/inter/latin-400.css";
+import "@fontsource/inter/latin-600.css";
+import "@fontsource/lora/400.css";
+import "@fontsource/lora/600.css";
+import '@fontsource/bungee-inline';
 
-const { title } = Astro.props;
----
+import Head from '../components/Head.astro';
+
+ ---
 
 <!doctype html>
 <html lang="en">
 	<head>
-		<meta charset="UTF-8" />
-		<meta name="description" content="Astro description" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>{title}</title>
+		<Head />
 	</head>
-	<body>
+	<!-- <body class="bg-gradient-to-b from-gray-200 via-gray-00 to-gray-600"> -->
+	<body class="">
+		<header class="header-fixed">
+		</header>
+		<div class="bb-headline bg-cover bg-center w-full h-96 shadow-lg flex items-center justify-center text-center" style="background-image: url('/images/womad-wop-banner-full.jpg');">
+			<span class="bb-title font-bold text-white drop-shadow-2xl">THE BIG BANG<br/>COLLECTIVE</span>
+		</div>
 		<slot />
 	</body>
 </html>
 <style is:global>
-	:root {
-		--accent: 136, 58, 234;
-		--accent-light: 224, 204, 250;
-		--accent-dark: 49, 10, 101;
-		--accent-gradient: linear-gradient(
-			45deg,
-			rgb(var(--accent)),
-			rgb(var(--accent-light)) 30%,
-			white 60%
-		);
-	}
-	html {
-		font-family: system-ui, sans-serif;
-		background: #13151a;
-		background-size: 224px;
-	}
-	code {
-		font-family:
-			Menlo,
-			Monaco,
-			Lucida Console,
-			Liberation Mono,
-			DejaVu Sans Mono,
-			Bitstream Vera Sans Mono,
-			Courier New,
-			monospace;
-	}
 </style>
+<script is:inline>
+	window.addEventListener('scroll', function() {
+		const header = document.querySelector('.header-fixed');
+		const title = document.querySelector('.bb-title');
+		if (window.scrollY > 10) {
+			header.classList.add('header-scrolled');
+			title.classList.add('bb-title-scrolled');
+		} else {
+			header.classList.remove('header-scrolled');
+			title.classList.remove('bb-title-scrolled');
+		}
+	});
+</script>
+
