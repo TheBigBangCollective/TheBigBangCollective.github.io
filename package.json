@@ -1,0 +1,22 @@
+{
+  "name": "bigbangcollective-website",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.5.10",
+    "@astrojs/tailwind": "^5.1.0",
+    "@fontsource/bungee-inline": "^5.0.20",
+    "@fontsource/inter": "^5.0.18",
+    "@fontsource/lora": "^5.0.17",
+    "@tailwindcss/typography": "^0.5.12",
+    "astro": "^4.6.4",
+    "typescript": "^5.4.5"
+  }
+}

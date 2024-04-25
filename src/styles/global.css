@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.header-fixed {
+    @apply fixed top-0 left-0 w-full bg-transparent text-white p-4 z-40 h-0 transition duration-300 ease-in-out;
+}
+.header-scrolled {
+    @apply bg-white text-gray-800 shadow-md h-14
+}
+
+.bb-title {
+    @apply fixed top-10;
+    font-size: clamp(48px, 6vw, 112px);
+    font-family: 'Bungee Inline', system-ui;
+    -webkit-text-stroke: 1px rgba(0, 0, 0, 0.9); 
+    transition: top 0.3s ease-in-out, font-size 0.3s ease-in-out; 
+}
+
+.bb-title-scrolled {
+    @apply top-0 z-50;
+    font-size: 1rem;
+}
+
+

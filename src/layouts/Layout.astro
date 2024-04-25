@@ -1,0 +1,43 @@
+---
+import "../styles/global.css";
+import "@fontsource/inter/latin-400.css";
+import "@fontsource/inter/latin-600.css";
+import "@fontsource/lora/400.css";
+import "@fontsource/lora/600.css";
+import '@fontsource/bungee-inline';
+
+import Head from '../components/Head.astro';
+
+ ---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<Head />
+	</head>
+	<!-- <body class="bg-gradient-to-b from-gray-200 via-gray-00 to-gray-600"> -->
+	<body class="">
+		<header class="header-fixed">
+		</header>
+		<div class="bb-headline bg-cover bg-center w-full h-96 shadow-lg flex items-center justify-center text-center" style="background-image: url('/images/womad-wop-banner-full.jpg');">
+			<span class="bb-title font-bold text-white drop-shadow-2xl">THE BIG BANG<br/>COLLECTIVE</span>
+		</div>
+		<slot />
+	</body>
+</html>
+<style is:global>
+</style>
+<script is:inline>
+	window.addEventListener('scroll', function() {
+		const header = document.querySelector('.header-fixed');
+		const title = document.querySelector('.bb-title');
+		if (window.scrollY > 10) {
+			header.classList.add('header-scrolled');
+			title.classList.add('bb-title-scrolled');
+		} else {
+			header.classList.remove('header-scrolled');
+			title.classList.remove('bb-title-scrolled');
+		}
+	});
+</script>
+
