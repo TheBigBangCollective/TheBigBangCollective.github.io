@@ -28,19 +28,8 @@ import BubbleChamber from '../components/BubbleChamber.astro';
 		</div>
 	</body>
 </html>
-<style is:global>
-</style>
-<script is:inline>
-	window.addEventListener('scroll', function() {
-		const header = document.querySelector('.header-fixed');
-		const title = document.querySelector('.bb-title');
-		if (window.scrollY > 10) {
-			header.classList.add('header-scrolled');
-			title.classList.add('bb-title-scrolled');
-		} else {
-			header.classList.remove('header-scrolled');
-			title.classList.remove('bb-title-scrolled');
-		}
-	});
+<script>
+	import {initScrollHeader} from '../util/scroll-header.js';
+	initScrollHeader();
 </script>
 
