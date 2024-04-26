@@ -1,25 +1,63 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Festival from '../components/Festival.astro';
+import Layout from "../layouts/Layout.astro";
+import Festival from "../components/Festival.astro";
 
-import womadLogo from "../../public/images/womad-logo.svg?raw"; 
+import womadLogo from "../../public/images/womad-logo.svg?raw";
 import smukfestLogo from "../../public/images/smukfest-logo.svg?raw";
 import ostravaLogo from "../../public/images/ostrava-logo.svg?raw";
 import rototomLogo from "../../public/images/rototom-logo.svg?raw";
 ---
-<Layout>
-	<div class="w-[95%] max-w-[1000px] shadow-lg p-6 mt-6 mx-auto rounded-xl bg-slate-100 bg-opacity-70 prose-slate lg:prose-xl">
-		<p class="">
-			Welcome to the Big Bang Collective, an exhilarating convergence of minds and ideas that lights up the world of science, technology, engineering, and mathematics (STEM). Each year, our festival embarks on a mission to ignite passion, curiosity, and innovation among attendees. With a vibrant tapestry of events, workshops, and live demonstrations, the festival program is meticulously designed to appeal to young enthusiasts, educators, and professionals alike. It serves as a dynamic platform for exploring the latest breakthroughs, engaging in thought-provoking discussions, and participating in hands-on activities that bring STEM concepts to life.
-		</p>
-		<p class="">
-			At the heart of our festival lies a commitment to fostering a deeper understanding and appreciation of the wonders of science and technology. The program is brimming with opportunities for participants to dive into the complexities of the cosmos, unravel the mysteries of the microscopic world, and discover the cutting-edge technologies shaping our future. From interactive exhibits that challenge the imagination to keynote speeches that inspire action, the Big Bang Collective offers an unparalleled journey through the marvels of STEM. Join us in celebrating the spirit of discovery and innovation that drives us forward into new frontiers.
-		</p>
-	</div>
-	<h2 class="transition-all font-bungee text-3xl md:text-6xl text-center mt-20">Festival Lineup 2024</h2>
-	<Festival variant="right" svg={ostravaLogo} name="Colours of Ostrava" dates="17 - 20 July" />
-	<Festival variant="left" svg={womadLogo} name="WOMAD" dates="25 - 28 July" description="The Physics Pavilion brings top science to the festival. Prepare to have your grey matter challenged and your mind blown by all manner of demonstrations, talks and discussions. WOMAD works in conjunction with CERN, the Institute of Physics, and the University of Lancaster to bring you cutting edge science from the best in the business."/>
-	<Festival variant="right" svg={smukfestLogo} name="Smukfest" dates="4 - 11 August" />
-	<Festival variant="left" svg={rototomLogo} name="Rototom Sunsplash" dates="16 - 21 August" />
 
+<Layout>
+  <div
+    class="w-[95%] max-w-[1000px] shadow-lg p-6 mt-6 mx-auto rounded-xl bg-slate-100 bg-opacity-70 prose-slate lg:prose-xl"
+  >
+    <p class="">
+      Welcome to the Big Bang Collective, an exhilarating fusion of minds and
+      ideas that illuminates the world of science, technology, engineering, and
+      mathematics (STEM). Each year, our festival sets out to spark passion,
+      curiosity, and innovation among attendees. The festival's programme is
+      richly curated to captivate young enthusiasts, educators, and
+      professionals alike, serving as a dynamic platform for exploring the
+      latest advancements, engaging in thought-provoking discussions, and
+      participating in hands-on activities that animate STEM concepts. At the
+      core of our festival is a commitment to deepening the understanding and
+      appreciation of the marvels of science and technology. The programme
+      offers a plethora of opportunities to delve into the complexities of the
+      cosmos, unravel the mysteries of the microscopic world, and explore
+      cutting-edge technologies that are shaping our future. With interactive
+      exhibits that stimulate the imagination and keynote speeches that inspire
+      action, the Big Bang Collective offers an unparalleled journey through the
+      wonders of STEM, celebrating the spirit of discovery and innovation that
+      propels us into new frontiers.
+    </p>
+  </div>
+  <h2 class="transition-all font-bungee text-3xl md:text-6xl text-center mt-20">
+    Festival Lineup 2024
+  </h2>
+  <Festival
+    variant="right"
+    svg={ostravaLogo}
+    name="Colours of Ostrava"
+    dates="17 - 20 July"
+  />
+  <Festival
+    variant="left"
+    svg={womadLogo}
+    name="WOMAD"
+    dates="25 - 28 July"
+    description="The Physics Pavilion brings top science to the festival. Prepare to have your grey matter challenged and your mind blown by all manner of demonstrations, talks and discussions. WOMAD works in conjunction with CERN, the Institute of Physics, and the University of Lancaster to bring you cutting edge science from the best in the business."
+  />
+  <Festival
+    variant="right"
+    svg={smukfestLogo}
+    name="Smukfest"
+    dates="4 - 11 August"
+  />
+  <Festival
+    variant="left"
+    svg={rototomLogo}
+    name="Rototom Sunsplash"
+    dates="16 - 21 August"
+  />
 </Layout>
