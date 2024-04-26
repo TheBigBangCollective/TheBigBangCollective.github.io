@@ -17,6 +17,7 @@
     "@fontsource/lora": "^5.0.17",
     "@tailwindcss/typography": "^0.5.12",
     "astro": "^4.6.4",
+    "date-fns": "^3.6.0",
     "typescript": "^5.4.5"
   }
 }

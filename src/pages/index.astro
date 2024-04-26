@@ -1,16 +1,25 @@
 ---
+import { getCollection, getEntry } from 'astro:content';
+
 import Layout from "../layouts/Layout.astro";
 import Festival from "../components/Festival.astro";
 
-import womadLogo from "../../public/images/womad-logo.svg?raw";
 import smukfestLogo from "../../public/images/smukfest-logo.svg?raw";
 import ostravaLogo from "../../public/images/ostrava-logo.svg?raw";
 import rototomLogo from "../../public/images/rototom-logo.svg?raw";
+
+const allFestivals = await getCollection('festivals');
+
+// Sorting the festivals by startDate
+allFestivals.sort((a, b) => {
+  return a.data.startDate.getTime() - b.data.startDate.getTime();
+});
+
 ---
 
 <Layout>
   <div
-    class="w-[95%] max-w-[1000px] shadow-lg p-6 mt-6 mx-auto rounded-xl bg-slate-100 bg-opacity-70 prose-slate lg:prose-xl"
+    class="w-[95%] max-w-[1000px] shadow-lg p-6 mt-6 mx-auto rounded-xl bg-slate-100 bg-opacity-70 prose-slate prose-large md:prose-xl transition-all"
   >
     <p class="">
       Welcome to the Big Bang Collective, an exhilarating fusion of minds and
@@ -35,7 +44,12 @@ import rototomLogo from "../../public/images/rototom-logo.svg?raw";
   <h2 class="transition-all font-bungee text-3xl md:text-6xl text-center mt-20">
     Festival Lineup 2024
   </h2>
-  <Festival
+
+{allFestivals.map((f, ix) => (
+	<Festival festival={f} index={ix} />
+))}
+
+  <!-- <Festival
     variant="right"
     svg={ostravaLogo}
     name="Colours of Ostrava"
@@ -59,5 +73,5 @@ import rototomLogo from "../../public/images/rototom-logo.svg?raw";
     svg={rototomLogo}
     name="Rototom Sunsplash"
     dates="16 - 21 August"
-  />
+  /> -->
 </Layout>

@@ -2,17 +2,19 @@
 import FestivalImage from "./FestivalImage.astro";
 import FestivalText from "./FestivalText.astro";
 
-const {variant = "right", name, dates, description, svg} = Astro.props;
+const { festival, index } = Astro.props;
+const variant = index % 2 === 0 ? "left" : "right";
 ---
 <div class="py-4 sm:py-6">
+
     <div class="mx-auto max-w-7xl px-6 lg:px-8 bg-white bg-opacity-70">
       <div class="mx-auto mt-16 max-w-2xl rounded-3xl ring-1 ring-gray-200 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none">
         {(variant == "right") ? (
-            <FestivalText name={name} dates={dates} description={description} />
-            <FestivalImage><Fragment set:html={svg} /></FestivalImage>
+            <FestivalText festival={festival} />
+            <FestivalImage festival={festival} />
         ) : (
-            <FestivalImage><Fragment set:html={svg} /></FestivalImage>
-            <FestivalText name={name} dates={dates} description={description} />
+            <FestivalImage festival={festival} />
+            <FestivalText festival={festival} />
         )}
       </div>
     </div>
