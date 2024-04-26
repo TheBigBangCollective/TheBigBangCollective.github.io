@@ -6,6 +6,7 @@ const festivalCollection = defineCollection({
       title: z.string(),
       startDate: z.date(),
       endDate: z.date(),
+      link: z.string().url().optional(),
       svg: z.any(),
     }),
  });

@@ -3,6 +3,7 @@ title: Colours of Ostrava
 startDate: 2024-07-17
 endDate: 2024-07-20
 svg: /images/ostrava-logo.svg
+link: https://www.colours.cz/
 ---
 The Big Bang Stage at Colours of Ostrava, located in the atmospheric industrial landscape of Dolní Vítkovice in the Czech Republic, offers a novel and immersive experience that melds physics with the arts. This stage is a centerpiece for intellectual and creative exploration, featuring a lineup of engaging presentations that highlight the intersections of science and everyday life. From the mysteries of the cosmos to the principles behind everyday phenomena, the stage brings science to life in a setting that encourages curiosity and dialogue.
 

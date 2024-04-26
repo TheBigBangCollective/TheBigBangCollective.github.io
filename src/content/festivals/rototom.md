@@ -3,6 +3,7 @@ title: Rototom Sunsplash
 startDate: 2024-08-16
 endDate: 2024-08-21
 svg: /images/rototom-logo.svg
+link: https://rototomsunsplash.com/
 ---
 This year marks a significant milestone for the Big Bang Collective as it makes its inaugural appearance at Rototom Sunsplash, held in the scenic town of Benicàssim, Spain. Known for its commitment to promoting peace, equality, and sustainability, Rototom is not just a music festival; it's a vibrant cultural gathering that celebrates reggae music and offers a diverse array of activities including workshops, arts, and cultural presentations.
 

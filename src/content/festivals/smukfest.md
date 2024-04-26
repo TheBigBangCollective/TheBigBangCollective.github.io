@@ -3,6 +3,7 @@ title: Smukfest
 startDate: 2024-08-04
 endDate: 2024-08-11
 svg: /images/smukfest-logo.svg
+link: https://www.smukfest.dk/
 ---
 This year, Smukfest, celebrated for its picturesque setting in the beech woods of Skanderborg, Denmark, embraces a novel and enriching addition to its diverse festival programming. Known affectionately as the 'most beautiful festival' due to its lush and leafy locale, Smukfest has always been more than just a music festival; it's a cultural gathering that enhances the senses and spirits of all who wander through its forested paths.
 
