@@ -1,21 +1,42 @@
 ---
-import FestivalImage from "./FestivalImage.astro";
-import FestivalText from "./FestivalText.astro";
+import { format } from "date-fns";
 
 const { festival, index } = Astro.props;
-const variant = index % 2 === 0 ? "left" : "right";
----
-<div class="py-4 sm:py-6">
+const { Content, headings, remarkPluginFrontmatter } = await festival.render();
 
-    <div class="mx-auto max-w-7xl px-6 lg:px-8 bg-white bg-opacity-70">
-      <div class="mx-auto mt-16 max-w-2xl rounded-3xl ring-1 ring-gray-200 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none">
-        {(variant == "right") ? (
-            <FestivalText festival={festival} />
-            <FestivalImage festival={festival} />
-        ) : (
-            <FestivalImage festival={festival} />
-            <FestivalText festival={festival} />
-        )}
+const sameMonth =
+  format(festival.data.startDate, "MMMM") ===
+  format(festival.data.endDate, "MMMM");
+const displayFormat = sameMonth
+  ? `${format(festival.data.startDate, "d")} - ${format(festival.data.endDate, "d MMMM")}`
+  : `${format(festival.data.startDate, "d MMMM")} - ${format(festival.data.endDate, "d MMMM")}`;
+
+const badgeVariant = index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse";
+const badgeClasses = `mx-auto mt-16 max-w-2xl rounded-3xl ring-1 ring-gray-200 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none flex flex-col-reverse ${badgeVariant}`;
+---
+<div class="py-4 sm:py-6" id={festival.slug}>
+  <div class="mx-auto max-w-7xl px-6 lg:px-8 bg-white bg-opacity-70">
+    <div
+      class={badgeClasses}
+    >
+      <div class="p-8 sm:p-10 lg:flex-auto">
+        <h3 class="text-4xl font-bold tracking-tight prose-slate">
+          {festival.data.title}
+        </h3>
+        <p class="text-base leading-7 prose-slate">{displayFormat}</p>
+        <div class="mt-6 text-base leading-7 prose prose-slate prose-large">
+          <Content />
+        </div>
+      </div>
+      <div class="-mt-2 p-2 lg:mt-0 lg:w-full lg:max-w-md lg:flex-shrink-0">
+        <div
+          class="rounded-2xl bg-gray-50 py-10 text-center ring-1 ring-inset ring-gray-900/5 lg:flex lg:flex-col lg:justify-center lg:py-16"
+        >
+          <div class="mx-auto h-96 w-80">
+            <img src={festival.data.svg} />
+          </div>
+        </div>
       </div>
     </div>
+  </div>
 </div>
