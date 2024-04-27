@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+    cursor: url('/radioactive.svg') 8 8, auto;
+}
+
 .font-bungee {
     font-family: 'Bungee Inline', system-ui;
 }
