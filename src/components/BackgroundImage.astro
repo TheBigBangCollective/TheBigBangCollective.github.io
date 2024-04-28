@@ -1,0 +1,48 @@
+---
+import { getImage } from 'astro:assets';
+
+const { src, tag = 'div', ...props} = Astro.props;
+
+const classes = props.class;
+const Tag = tag;
+
+const sizes = [1920, 1366, 1024, 768, 576]
+
+
+const srcset: Map<string, string> = new Map(await Promise.all(sizes.map(async (size): Promise<[string, string]> => {
+    const img = await getImage({ src, format: 'webp', width: size });
+    return [`w${size}`, `url('${img.src}')`];
+})));
+---
+
+<div class={classes}>
+    <slot />
+</div>
+
+<style define:vars={ Object.fromEntries(srcset) }>
+    @media (min-width: 1920px) {
+        div {
+            background-image: var(--w1920);
+        }
+    }
+    @media (min-width: 1366px) and (max-width: 1920px) {
+        div {
+            background-image: var(--w1366);
+        }
+    }
+    @media (min-width: 1024px) and (max-width: 1366px) {
+        div {
+            background-image: var(--w1024);
+        }
+    }
+    @media (max-width: 768px) and (max-width: 1024px) {
+        div {
+            background-image: var(--w768);
+        }
+    }
+    @media (max-width: 1024px) {
+        div {
+            background-image: var(--w576);
+        }
+    }
+</style>
