@@ -18,7 +18,8 @@ body {
 }
 
 .bb-title {
-    @apply fixed top-10;
+    @apply fixed top-10 text-center;
+    width: 100%;
     font-size: clamp(48px, 6vw, 112px);
     font-family: 'Bungee Inline', system-ui;
     -webkit-text-stroke: 1px rgba(0, 0, 0, 0.9); 
