@@ -1,0 +1,43 @@
+---
+
+---
+
+<div class="marquee enable-animation">
+  <ul class="marquee__content">
+    <slot />
+  </ul>
+  <!-- Mirrors the content above -->
+  <ul class="marquee__content" aria-hidden="true">
+    <slot />
+  </ul>
+</div>
+<style>
+.marquee {
+  --gap: 1rem;
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  gap: var(--gap);
+}
+
+.marquee__content {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-around;
+  min-width: 100%;
+  gap: var(--gap);
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+.enable-animation .marquee__content {
+  animation: scroll 30s linear infinite;
+}
+</style>

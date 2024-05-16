@@ -1,0 +1,60 @@
+---
+/**
+ * A smaller version of the "Festival" item that is suitable for a single line such as in the Marquee
+ */
+
+import {formatDates} from "../util/dates";
+import fs from 'fs';
+import path from 'path';
+
+const { festival, index } = Astro.props;
+let flagSvg = null;
+try {
+  const isoCode = festival.data.country;
+  const svgPath = path.resolve('node_modules/svg-country-flags/svg', `${isoCode}.svg`);
+  flagSvg = fs.readFileSync(svgPath, 'utf-8');
+  flagSvg = flagSvg.replace(/<svg /, '<svg height="100%"');
+} catch (e) {
+  console.error(`Could not load flag for ${festival.data.country}`, e);
+}
+const displayFormat = formatDates(festival.data.startDate, festival.data.endDate);
+---
+
+<div class="container">
+  {flagSvg && <div class="svg-image">
+    <Fragment set:html={flagSvg} />
+  </div>
+  }
+  <span>
+  {displayFormat} - 
+  {festival.data.title}
+ </span>
+  <!-- <img src={festival.data.svg} class="max-h-[2rem] flex-1" /> -->
+</div>
+<style>
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    justify-items: start;
+    width: 50vw;
+
+    font-size: 2vw;
+  }
+  span {
+    padding: 0 0.8em;
+  }
+  .svg-image {
+    flex: 0 0 auto;    
+    display: inline-block;
+    height: 1em;
+    margin-right: 0.5rem;  
+    vertical-align: middle;
+  }
+  .svg-image svg {
+  }
+  img {
+    flex: 0 0 auto;    
+  }
+
+</style>

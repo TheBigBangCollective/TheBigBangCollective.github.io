@@ -1,0 +1,114 @@
+---
+import ResponsivePicture from "../components/ResponsivePicture.astro";
+import { Picture } from "astro:assets";
+import historyImage from "../assets/cern-restaurant-1.jpg";
+import historyImage2 from "../assets/pohoda-queue.jpg";
+import historyImage3 from "../assets/science-pavilion.jpg";
+---
+<div class="grid">
+    <div class="text" style="background-color: #6a8167; color: #c8f7c5;">
+      <p>
+        The Festival Programme began in 2015. At the end of a long day visiting
+        CERN, Real World CEO Mike Large was having a beer on the CERN terrace
+        with Connie Potter and Chris Thomas from CERN and Roger Jones from
+        Lancaster University.
+      </p>
+      <p>
+        Mike, overseeing the WOMAD music festivals, felt that the WOMAD UK
+        audience would love to hear about some of the science going on at CERN.
+      </p>
+      <p>
+        The locals were not convinced – “why would people in the middle of the
+        countryside, faced with a programme of music, books, dance and
+        well-being want to listen to talks on science?” – but Mike was confident
+        – his WOMAD audience were curious, eager to always learn more.
+      </p>
+      <p>
+        And so the first World of Physics, initially called the Physics
+        Pavilion, was born, in the form of a collaboration between CERN, WOMAD
+        and Lancaster University.
+      </p>
+    </div>
+    <div class="image">
+        <Picture src={historyImage} alt="History" />
+    </div>
+</div>
+<div class="grid">
+    <div class="image">
+        <Picture src={historyImage2} alt="History" />
+    </div>
+    <div class="text" style="background-color: #f3b84f; color: #aa2e00;">
+        <p>
+          That first World of Physics offered a 3 day programme of hands-on
+          workshops, talks and shows to over 5000 people over the 3 days. The
+          success was phenomenal and continues to this day.
+        </p>
+        <p>
+          The majority of attendees state on the feedback forms that they never go
+          to science events during the year, that the fun, engaging way in which
+          we share our science, including having real physicists welcoming them,
+          on hand to discuss any topics they wish, changed their feelings about
+          science.It wasn’t the hard slog they had known at school, with
+          uninspiring teachers. They weren’t made to feel stupid with their
+          questions. They revelled in this new found interest and kept coming back
+          each day, and still do.. each year.
+        </p>
+      </div>
+</div>
+<div class="grid">
+    <div class="text" style="background-color: #ef3837; color: #551700;">
+        <p>
+          As Connie and Chris gave talks on this new form of outreach to the
+          public, it became clear from responses from the community that other
+          countries were very keen to have their own Science Pavilion
+        </p>
+        <p>
+  
+          Partnerships were formed with collaborating institutes in Slovakia, the
+          Czech Republic and Denmark resulting in Science Pavilions at the Pohoda
+          Festival in Slovakia, the Colours of Ostrava in the Czech Republic and
+          the Roskilde Festival in Denmark. 
+        </p>
+        <p>
+          In 2024 we are proud to announce that
+          we will be launching a new Science Pavilion at the Smukfest in Denmark
+          and Rototon Sunsplash in Spain.
+        </p>
+      </div>
+      <div class="image">
+        <Picture src={historyImage3} alt="History" />
+    </div>
+</div>
+    <style>
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .text {
+            display: flex;
+            padding: 1rem;
+            flex: 1;
+            font-size: 1.3vw;
+            justify-content: space-around;
+            flex-direction: column;
+        }
+        .image {
+            flex: 1;
+            display: flex;
+        }
+        .image img {
+            height: 100%;
+            width: auto;
+            margin: auto;
+        }
+
+    </style>
+
+
+<!-- 
+
+
+
+    <ResponsivePicture src={historyImage} alt="History" />
+
+  </div> -->

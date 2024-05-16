@@ -1,16 +1,11 @@
 ---
-import { format } from "date-fns";
 import FestivalButton from "./FestivalButton.astro";
+import {formatDates} from "../util/dates";
 
 const { festival, index } = Astro.props;
-const { Content, headings, remarkPluginFrontmatter } = await festival.render();
+const { Content  } = await festival.render();
 
-const sameMonth =
-  format(festival.data.startDate, "MMMM") ===
-  format(festival.data.endDate, "MMMM");
-const displayFormat = sameMonth
-  ? `${format(festival.data.startDate, "d")} - ${format(festival.data.endDate, "d MMMM")}`
-  : `${format(festival.data.startDate, "d MMMM")} - ${format(festival.data.endDate, "d MMMM")}`;
+const displayFormat = formatDates(festival.data.startDate, festival.data.endDate);
 
 const badgeVariant = index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse";
 const badgeClasses = `mx-auto mt-16 max-w-2xl rounded-3xl ring-1 ring-gray-200 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none flex flex-col-reverse ${badgeVariant}`;
@@ -25,7 +20,9 @@ const badgeClasses = `mx-auto mt-16 max-w-2xl rounded-3xl ring-1 ring-gray-200 s
         </h3>
         <p class="text-base leading-7 prose-slate">{displayFormat}</p>
         <div class="mt-6 text-base leading-7 prose prose-slate prose-large">
-          <Content />
+          { festival.data.summary && <div> {festival.data.summary} </div> }
+          { !festival.data.summary && <Content /> }
+          
         </div>
       </div>
       <div
