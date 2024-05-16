@@ -1,0 +1,30 @@
+---
+import fs from 'fs';
+import { getImage } from "astro:assets";
+
+const files = fs.readdirSync('src/assets/gallery/');
+
+async function loadImages(files: string[]) {
+    const images = await Promise.all(files.map(async (file) => {
+        try {
+                const src = await import( /* @vite-ignore */ `/src/assets/gallery/${file}`);
+                const image = await getImage({src: src.default, format: 'jpg'});
+                const thumb = await getImage({src: src.default, format: 'jpg', width: 200});
+                return { image, thumb };
+            } catch (error) {
+                console.error(`Error processing file ${file}:`, error);
+                return null; // Return null if there's an error processing the image
+            }
+    }));
+    return images.filter(image => image !== null);
+}
+
+const images = await loadImages(files);
+---
+<div id="lightgallery">
+    {images.map(data => (
+        <a href={data?.image.src} data-lg-size="1600-2400">
+            <img alt="img1" src={data?.thumb.src} />
+        </a>
+    ))}
+</div>

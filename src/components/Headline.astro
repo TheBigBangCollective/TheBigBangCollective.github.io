@@ -4,6 +4,6 @@ import { slug as githubSlug } from 'github-slugger';
 const content = await Astro.slots.render('default')
 const slug = githubSlug(content)
 ---
-<h2 id={slug} class="transition-all font-bungee text-3xl md:text-6xl text-center mt-20">
+<h2 id={slug} class="transition-all font-bungee text-3xl md:text-6xl text-center mt-20 mb-10">
     <slot />
 </h2>
