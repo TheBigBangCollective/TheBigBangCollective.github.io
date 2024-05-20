@@ -29,7 +29,6 @@ const displayFormat = formatDates(festival.data.startDate, festival.data.endDate
   {displayFormat} - 
   {festival.data.title}
  </span>
-  <!-- <img src={festival.data.svg} class="max-h-[2rem] flex-1" /> -->
 </div>
 <style>
   .container {
@@ -37,9 +36,8 @@ const displayFormat = formatDates(festival.data.startDate, festival.data.endDate
     align-items: center;
     justify-content: start;
     justify-items: start;
-    width: 50vw;
-
-    font-size: 2vw;
+    width: max(50vw, 30rem);
+    font-size: max(2vw, 1rem);
   }
   span {
     padding: 0 0.8em;

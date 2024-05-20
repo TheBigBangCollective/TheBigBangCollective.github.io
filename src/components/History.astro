@@ -6,7 +6,7 @@ import historyImage2 from "../assets/pohoda-queue.jpg";
 import historyImage3 from "../assets/science-pavilion.jpg";
 ---
 
-<div class="grid">
+<div class="grid odd">
   <div class="text" style="background-color: #6a8167; color: #c8f7c5;">
     <p>
       The Festival Programme began in 2015. At the end of a long day visiting
@@ -34,7 +34,7 @@ import historyImage3 from "../assets/science-pavilion.jpg";
     <Picture src={historyImage} alt="History" />
   </div>
 </div>
-<div class="grid">
+<div class="grid even">
   <div class="image">
     <Picture src={historyImage2} alt="History" />
   </div>
@@ -56,7 +56,7 @@ import historyImage3 from "../assets/science-pavilion.jpg";
     </p>
   </div>
 </div>
-<div class="grid">
+<div class="grid odd">
   <div class="text" style="background-color: #F57E7E; color: #551700;">
     <p>
       As Connie and Chris gave talks on this new form of outreach to the public,
@@ -82,16 +82,20 @@ import historyImage3 from "../assets/science-pavilion.jpg";
   .grid {
     display: flex;
     flex-wrap: wrap;
+    flex-direction: row-re;
     width: 100%;
   }
   .text {
     display: flex;
     padding: 1rem;
     flex: 1 1 auto;
-    font-size: 1.3vw;
-    justify-content: space-around;
+    font-size: max(1.3vw, 1rem);
+    /* justify-content: space-around; */
     flex-direction: column;
     width: 50%;
+  }
+  .text p {
+    margin-bottom: 2rem;
   }
   .image {
     flex: 1 1 auto;
@@ -103,6 +107,21 @@ import historyImage3 from "../assets/science-pavilion.jpg";
     width: auto;
     margin: auto;
   }
+  @media (max-width: 600px) {
+    .grid.even {
+      flex-direction: column-reverse;
+    }
+    .text {
+      width: 100%;
+    }
+    .image {
+        width: 100%;
+    }
+    .image img {
+      width: 100%;
+    }
+  }
+
 </style>
 
 <!-- 
