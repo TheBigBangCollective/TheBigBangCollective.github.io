@@ -1,9 +1,12 @@
 ---
-import ResponsivePicture from "../components/ResponsivePicture.astro";
-import { Picture } from "astro:assets";
+import { Image } from "astro:assets";
 import historyImage from "../assets/cern-restaurant-1.jpg";
 import historyImage2 from "../assets/pohoda-queue.jpg";
 import historyImage3 from "../assets/science-pavilion.jpg";
+
+const widths = [240, 540, 720, 1024, 2048]
+const sizes = `(max-width: 540px) 240px, (max-width: 720px) 540px, (max-width: 1024px) 720px, (max-width: 2048px) 1024px, 2048px`
+
 ---
 
 <div class="grid odd">
@@ -31,12 +34,12 @@ import historyImage3 from "../assets/science-pavilion.jpg";
     </p>
   </div>
   <div class="image">
-    <Picture src={historyImage} alt="History" />
+    <Image src={historyImage} alt="The CERN terrace" widths={widths} sizes={sizes} />
   </div>
 </div>
 <div class="grid even">
   <div class="image">
-    <Picture src={historyImage2} alt="History" />
+    <Image src={historyImage2} alt="Long queues outside the World of Physics" widths={widths} sizes={sizes} />
   </div>
   <div class="text" style="background-color: #F6CB7F; color: #aa2e00;">
     <p>
@@ -76,7 +79,7 @@ import historyImage3 from "../assets/science-pavilion.jpg";
     </p>
   </div>
   <div class="image">
-    <Picture src={historyImage3} alt="History" />
+    <Image src={historyImage3} alt="The Science Pavillion at Roskilde" widths={widths} sizes={sizes} />
   </div>
 </div>
 <style>
