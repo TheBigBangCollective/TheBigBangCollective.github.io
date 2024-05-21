@@ -18,7 +18,6 @@
     "@tailwindcss/typography": "^0.5.12",
     "astro": "^4.6.4",
     "date-fns": "^3.6.0",
-    "lightgallery": "^2.7.2",
     "svg-country-flags": "^1.2.10",
     "typescript": "^5.4.5"
   }

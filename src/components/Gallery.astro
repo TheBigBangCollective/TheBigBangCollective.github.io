@@ -2,15 +2,17 @@
 import fs from 'fs';
 import { getImage } from "astro:assets";
 
-const files = fs.readdirSync('src/assets/gallery/');
 
-async function loadImages(files: string[]) {
+const galleryData = fs.readFileSync('src/assets/gallery/gallery.json', 'utf8');
+const files = JSON.parse(galleryData);
+
+async function loadImages(files: GalleryItem[]) {
     const images = await Promise.all(files.map(async (file) => {
         try {
-                const src = await import( /* @vite-ignore */ `/src/assets/gallery/${file}`);
-                const image = await getImage({src: src.default, format: 'jpg'});
-                const thumb = await getImage({src: src.default, format: 'jpg', width: 200});
-                return { image, thumb };
+                const src = await import( /* @vite-ignore */ `/src/assets/gallery/${file.filename}`);
+                const image = await getImage({src: src.default, format: 'webp'});
+                const thumb = await getImage({src: src.default, format: 'webp', width: 200, quality: 'low'});
+                return { image, thumb, file };
             } catch (error) {
                 console.error(`Error processing file ${file}:`, error);
                 return null; // Return null if there's an error processing the image
@@ -21,10 +23,33 @@ async function loadImages(files: string[]) {
 
 const images = await loadImages(files);
 ---
-<div id="lightgallery">
-    {images.map(data => (
-        <a href={data?.image.src} data-lg-size="1600-2400">
-            <img alt="img1" src={data?.thumb.src} />
-        </a>
-    ))}
+<div class="galleria-wrapper">
+    <div class="galleria">
+        {images.map(data => (
+            <a href={data?.image.src}><img src={data?.thumb.src} data-title={data?.file.title} data-description={data?.file.alt_text}></a>
+        ))}
+    </div>
 </div>
+
+<style>
+    .galleria-wrapper {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+    }   
+    .galleria {
+        height: 400px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.innerWidth < 768) {
+            window.Galleria.loadTheme('https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/classic/galleria.classic.min.js');
+        } else {
+            window.Galleria.loadTheme('https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.js');
+        }
+        window.Galleria.run('.galleria');
+    });
+</script>
+
