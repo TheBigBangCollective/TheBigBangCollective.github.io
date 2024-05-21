@@ -1,17 +1,28 @@
 ---
 import fs from 'fs';
+import path from 'path';
 import { getImage } from "astro:assets";
+const galleryImages = import.meta.glob('../assets/gallery/*', { eager: false });
 
 
 const galleryData = fs.readFileSync('src/assets/gallery/gallery.json', 'utf8');
 const files = JSON.parse(galleryData);
 
+for (const imagePath in galleryImages) {
+    const filename = path.basename(imagePath);
+    const file = files.find((file: GalleryItem) => file.filename === filename);
+    if (file) {
+        file.src = galleryImages[imagePath];
+    }
+}
+
 async function loadImages(files: GalleryItem[]) {
     const images = await Promise.all(files.map(async (file) => {
+        if (!file.src) return null;
         try {
-                const src = await import( /* @vite-ignore */ `/src/assets/gallery/${file.filename}`);
-                const image = await getImage({src: src.default, format: 'webp'});
-                const thumb = await getImage({src: src.default, format: 'webp', width: 200, quality: 'low'});
+                const src = (await file.src()).default;
+                const image = await getImage({src, format: 'webp'});
+                const thumb = await getImage({src, format: 'webp', width: 200, quality: 'low'});
                 return { image, thumb, file };
             } catch (error) {
                 console.error(`Error processing file ${file}:`, error);

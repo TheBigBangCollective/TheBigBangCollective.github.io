@@ -7,7 +7,7 @@ import {formatDates} from "../util/dates";
 import fs from 'fs';
 import path from 'path';
 
-const { festival, index } = Astro.props;
+const { festival } = Astro.props;
 let flagSvg = null;
 try {
   const isoCode = festival.data.country;

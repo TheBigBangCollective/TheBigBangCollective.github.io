@@ -130,7 +130,7 @@ export function init(canvas) {
             particles.push(new Particle(mouseX, mouseY));
         }
 
-        particles.forEach((particle, index) => {
+        particles.forEach((particle) => {
             particle.draw(ctx, 0.005);
         });
 
