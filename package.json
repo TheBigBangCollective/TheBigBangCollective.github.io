@@ -20,7 +20,6 @@
     "date-fns": "^3.6.0",
     "svg-country-flags": "^1.2.10",
     "typescript": "^5.4.5",
-    "video.js": "^8.12.0",
-    "videojs-youtube": "^3.0.1"
+    "video.js": "^8.12.0"
   }
 }

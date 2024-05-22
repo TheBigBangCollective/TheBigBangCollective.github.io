@@ -48,12 +48,20 @@ const classes = Astro.props.class;
 <script>
   import videojs from "video.js";
   import "video.js/dist/video-js.css";
-  const player = videojs("vid1", { autoplay: true, muted: true });
 
+  const videoUrls = [
+    "https://kws-public-stuff.s3.amazonaws.com/bigbang-womad-2019.mp4",
+    "https://kws-public-stuff.s3.amazonaws.com/bigbang-roskilde-2022.mp4"
+  ]
+
+  const randomVideoUrl = () => videoUrls[Math.floor(Math.random() * videoUrls.length)];
+
+  const player = videojs("vid1", { autoplay: true, muted: true });
   player.ready(() => {
-    console.log("Player is ready");
-    player.play();
+    player.src(randomVideoUrl());
+  });
+  player.on('ended', () => {
+    player.src(randomVideoUrl());
   });
 
-  console.log("Hello from video.js!", player);
 </script>
