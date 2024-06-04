@@ -1,0 +1,18 @@
+---
+import Layout from "../layouts/Layout.astro";
+import BannerVideo from "../components/BannerVideo.astro";
+import backgroundImage from '../assets/womad-wop-banner-full.jpg';
+---
+
+<Layout>
+    <header class="header-fixed">
+    </header>
+    <BannerVideo src={backgroundImage} class="bb-headline bg-cover bg-center w-full h-full max-h-[600px] shadow-lg flex items-center justify-center text-center">
+        <span class="bb-title font-bold text-white drop-shadow-2xl">THE BIG BANG<br/>COLLECTIVE</span>
+    </BannerVideo>
+    <slot />
+</Layout>
+<script>
+	import {initScrollHeader} from '../util/scroll-header.js';
+	initScrollHeader();
+</script>

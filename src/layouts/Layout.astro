@@ -6,11 +6,8 @@ import "@fontsource/lora/400.css";
 import "@fontsource/lora/600.css";
 import '@fontsource/bungee-inline';
 
-import BackgroundImage from "../components/BackgroundImage.astro";
 import BubbleChamber from '../components/BubbleChamber.astro';
 import Head from '../components/Head.astro';
-
-import backgroundImage from '../assets/womad-wop-banner-full.jpg';
 
 ---
 <!doctype html>
@@ -18,22 +15,13 @@ import backgroundImage from '../assets/womad-wop-banner-full.jpg';
 	<head>
 		<Head title="The Big Bang Collective"/>
 	</head>
-	<!-- <body class="bg-gradient-to-b from-gray-200 via-gray-00 to-gray-600"> -->
-	<body class="">
+	<body>
 		<BubbleChamber />
-		<header class="header-fixed">
-		</header>
-		<BackgroundImage src={backgroundImage} class="bb-headline bg-cover bg-center w-full h-full max-h-[600px] shadow-lg flex items-center justify-center text-center">
-			<span class="bb-title font-bold text-white drop-shadow-2xl">THE BIG BANG<br/>COLLECTIVE</span>
-		</BackgroundImage>
-		<slot />
+		<slot /> 
 		<div class="footer bg-gray-800 text-white text-center p-4">
 			<p class="inline-flex items-center justify-center" style="white-space: pre-wrap;">Made with <span class="material-symbols-outlined text-red-600">favorite</span> by <a href="https://github.com/greatestwx">Julian</a> and <a href="https://www.k-si.com/">Kaj</a></p>
 		</div>
 	</body>
 </html>
-<script>
-	import {initScrollHeader} from '../util/scroll-header.js';
-	initScrollHeader();
-</script>
+
 

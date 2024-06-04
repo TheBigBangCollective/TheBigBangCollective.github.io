@@ -8,7 +8,7 @@ import FestivalMarquee from "../components/FestivalMarquee.astro";
 import Gallery from "../components/Gallery.astro";
 import Headline from "../components/Headline.astro";
 import History from "../components/History.astro";
-import Layout from "../layouts/Layout.astro";
+import FrontPage from "../layouts/FrontPage.astro";
 import Welcome from "../components/Welcome.astro";
 import Marquee from "../components/Marquee.astro";
 
@@ -20,9 +20,8 @@ allFestivals.sort((a, b) => {
 });
 ---
 
-<Layout>
+<FrontPage>
   <Welcome />
-
 
   <div class="my-20 w-full">
     <Marquee>
@@ -46,4 +45,4 @@ allFestivals.sort((a, b) => {
   <Headline>Contact Us</Headline>
 
   <ContactUs />
-</Layout>
+</FrontPage>
