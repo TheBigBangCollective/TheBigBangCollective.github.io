@@ -1,0 +1,20 @@
+---
+import Layout from "./Layout.astro";
+---
+
+<Layout>
+    <header class="header header-fixed header-scrolled">
+        <a href="/">
+            <span class="bb-title bb-title-scrolled font-bold text-white drop-shadow-2xl">THE BIG BANG<br/>COLLECTIVE</span>
+        </a>
+    </header>
+    <section class="content">
+        <slot />
+    </section>
+</Layout>
+<style>
+    section {
+        margin-top: 4.5rem;
+    }
+</style>
+
