@@ -55,12 +55,18 @@ const images = await loadImages(files);
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const options: { _center?: boolean } = {}
         if (window.innerWidth < 768) {
             window.Galleria.loadTheme('https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/classic/galleria.classic.min.js');
         } else {
             window.Galleria.loadTheme('https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.js');
+            options["_center"] = true;
+            const galleriaWrapper = document.querySelector('.galleria-wrapper') as HTMLDivElement;
+            if (galleriaWrapper) {
+                galleriaWrapper.style.padding = '0 1em';
+            }
         }
-        window.Galleria.run('.galleria');
+        window.Galleria.run('.galleria', options);
     });
 </script>
 
