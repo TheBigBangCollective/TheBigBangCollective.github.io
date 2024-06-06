@@ -7,7 +7,7 @@ const classes = Astro.props.class;
 <section class={classes}>
   <div class="video-container">
     <video-js id="vid1" class="video">
-      <source src="https://kws-public-stuff.s3.amazonaws.com/bigbang-womad-2019.mp4" />
+      <source src="https://kws-public-stuff.s3.amazonaws.com/bigbang-womad-2019-q0.mp4" />
     </video-js>
   </div>
   <div class="text-container">
@@ -50,8 +50,8 @@ const classes = Astro.props.class;
   import "video.js/dist/video-js.css";
 
   const videoUrls = [
-    "https://kws-public-stuff.s3.amazonaws.com/bigbang-womad-2019.mp4",
-    "https://kws-public-stuff.s3.amazonaws.com/bigbang-roskilde-2022.mp4"
+    "https://kws-public-stuff.s3.amazonaws.com/bigbang-womad-2019-q0.mp4",
+    "https://kws-public-stuff.s3.amazonaws.com/bigbang-roskilde-2022-q0.mp4"
   ]
 
   const randomVideoUrl = () => videoUrls[Math.floor(Math.random() * videoUrls.length)];
