@@ -98,7 +98,7 @@
 
         const receiveFile = (e) => {
             e.preventDefault();
-            dropzone.classList.remove('dragover');
+            e.target.classList.remove('dragover');
             
             const files = e.dataTransfer.files;
             if (files.length > 0) {
@@ -133,15 +133,37 @@
         addListeners(circleImage);
 
         const inputElements = document.getElementsByClassName("input-container");
-        console.log("Input Elements", inputElements);
+
+        const getUrlParams = () => {
+            const params = new URLSearchParams(window.location.search);
+            const paramObject = {};
+            for (const [key, value] of params.entries()) {
+                paramObject[key] = value;
+            }
+            return paramObject;
+        };
+
+        const updateUrlParams = (key, value) => {
+            const url = new URL(window.location);
+            url.searchParams.set(key, value);
+            history.replaceState(null, '', url);
+        };
+        
+        const params = getUrlParams();
         Array.from(inputElements).forEach(element => {
-            const inputEl = element.querySelector('input')
-            const targetText = document.getElementById(inputEl.dataset.id)
-            inputEl.addEventListener('keyup', () => {
-                targetText.textContent = inputEl.value;
-            });
-            console.log(inputEl, targetText)
-            inputEl.placeholder = targetText.textContent.trim();
+                const inputEl = element.querySelector('input');
+                const targetText = document.getElementById(inputEl.dataset.id);
+
+                const paramValue = params[inputEl.dataset.id] || targetText.textContent.trim();
+                
+                inputEl.value = paramValue;
+                targetText.textContent = paramValue;
+                inputEl.placeholder = targetText.textContent.trim();
+                
+                inputEl.addEventListener('keyup', () => {
+                    targetText.textContent = inputEl.value;
+                    updateUrlParams(inputEl.dataset.id, inputEl.value);
+                });
             
         });
 
