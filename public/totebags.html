@@ -47,8 +47,7 @@
         <input type="text" data-id="nameText" placeholder="Type text to update the text below the image" />
     </div>
 
-    <svg id="svgElement" width="20cm" height="25cm" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-        <!-- Define the clipping path -->
+    <svg id="svgElement" width="28cm" height="28cm" viewBox="-50 0 600 600" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
         <defs>
             <filter id="grayscale">
                 <feColorMatrix type="matrix"
@@ -58,7 +57,7 @@
                         0      0      0      1 0"/>
             </filter>
             <clipPath id="circleClip">
-                <circle cx="250" cy="250" r="200" />  <!-- 20cm radius, SVG units assumed as 10 per cm -->
+                <circle cx="250" cy="250" r="198" />
             </clipPath>
             <path id="upperPath" d="M 250, 470
                           a 220,220 0 0,1 0,-440
@@ -73,12 +72,12 @@
         <text font-size="20" style="text-anchor: middle; font-family: Arial; font-weight: bold; dominant-baseline: middle;">
             <textPath xlink:href="#upperPath" startOffset="50%" id="upperText">
                 It's 106 miles to Chicago, we got a full tank of gas, half a pack of cigarettes
-            </TextPath>
+            </textPath>
         </text>
         <text font-size="20" style="text-anchor: middle; font-family: Arial; font-weight: bold; dominant-baseline: middle;">
             <textPath xlink:href="#lowerPath" startOffset="50%" id="lowerText">
                 it's dark... and we're wearing sunglasses
-            </TextPath>
+            </textPath>
         </text>
         <text x="250" y="540" font-size="40" style="text-anchor: middle; font-family: Arial; font-weight: bold;" id="nameText">
             Connie Potter
@@ -91,6 +90,9 @@
 
     <div class="button-container">
         <button id="downloadButton">Download Image at 600 DPI</button>
+    </div>
+    <div class="button-container">
+        <button id="downloadSvgButton">Download SVG</button>
     </div>
 
     <script>
@@ -190,8 +192,20 @@
             img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
         };
 
-        document.getElementById('downloadButton').addEventListener('click', renderImage);
+        const saveSVG = () => {
+            const svgElement = document.getElementById('svgElement');
+            const svgData = new XMLSerializer().serializeToString(svgElement);
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const svgUrl = URL.createObjectURL(svgBlob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = svgUrl;
+            downloadLink.download = 'circle_image.svg';
+            downloadLink.click();
+        };
 
+
+        document.getElementById('downloadButton').addEventListener('click', renderImage);
+        document.getElementById('downloadSvgButton').addEventListener('click', saveSVG);
     </script>
 
 <div id="originalImageSource">
