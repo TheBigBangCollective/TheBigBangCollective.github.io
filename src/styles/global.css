@@ -7,7 +7,7 @@ body {
 }
 
 .font-bungee {
-    font-family: 'Bungee Inline', system-ui;
+    font-family: 'Arial Black', Arial, sans-serif;
 }
 
 .header-fixed {
@@ -21,14 +21,19 @@ body {
     @apply fixed top-10 text-center;
     width: 100%;
     font-size: clamp(48px, 6vw, 112px);
-    font-family: 'Bungee Inline', system-ui;
-    -webkit-text-stroke: 1px rgba(0, 0, 0, 0.9); 
-    transition: top 0.3s ease-in-out, font-size 0.3s ease-in-out; 
+    font-family: 'Arial Black', Arial, sans-serif;
+    text-shadow:         
+        0 0 5px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(0, 0, 0, 0.4),
+        0 0 15px rgba(0, 0, 0, 0.3);
+    transition: top 0.3s ease-in-out, font-size 0.3s ease-in-out, color 0.3s ease-in-out, text-shadow 0.3s ease-in-out; 
 }
 
 .bb-title-scrolled {
     @apply top-0 z-50;
     font-size: 1rem;
+    color: #000;
+    text-shadow: none;
 }
 
 .material-symbols-outlined {
