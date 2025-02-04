@@ -12,17 +12,17 @@ import FrontPage from "../layouts/FrontPage.astro";
 import Welcome from "../components/Welcome.astro";
 import Marquee from "../components/Marquee.astro";
 
-const allFestivals = await getCollection("festivals");
+// const allFestivals = await getCollection("festivals");
 
-// Sorting the festivals by startDate
-allFestivals.sort((a, b) => {
-  return a.data.startDate.getTime() - b.data.startDate.getTime();
-});
+// // Sorting the festivals by startDate
+// allFestivals.sort((a, b) => {
+//   return a.data.startDate.getTime() - b.data.startDate.getTime();
+// });
 ---
 
 <FrontPage>
   <Welcome />
-
+<!-- 
   <div class="mt-40 w-full">
     <Marquee>
       {allFestivals.map((f, ix) => <FestivalMarquee festival={f} index={ix} />)}
@@ -30,17 +30,17 @@ allFestivals.sort((a, b) => {
     <div class="flex w-full justify-center items-center mt-5">
       <CoolButton href="#festival-lineup-2024">See full lineup</CoolButton>
     </div>
-  </div>
+  </div> -->
 
   <Headline>Our History</Headline>
   <History />
 
   <Headline>Gallery</Headline>
   <Gallery />
-
+<!-- 
   <Headline>Festival Lineup 2024</Headline>
 
-  {allFestivals.map((f, ix) => <Festival festival={f} index={ix} />)}
+  {allFestivals.map((f, ix) => <Festival festival={f} index={ix} />)} -->
 
   <Headline>Contact Us</Headline>
 
