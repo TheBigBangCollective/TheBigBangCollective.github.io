@@ -1,54 +1,92 @@
-# Astro Starter Kit: Basics
+# The Big Bang Collective Website
 
-```sh
-npm create astro@latest -- --template basics
-```
+This is the official website for The Big Bang Collective, built using modern web technologies to showcase our STEM festivals and initiatives. The website serves as a central hub for information about our events, galleries of past activities, and updates about our community.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/basics/devcontainer.json)
+## 🛠️ Technology Stack
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+- [Astro](https://astro.build/) - Our core framework for fast, static site generation
+- [TypeScript](https://www.typescriptlang.org/) - For type-safe development
+- [Tailwind CSS](https://tailwindcss.com/) - For styling, including:
+  - [@tailwindcss/typography](https://tailwindcss.com/docs/typography-plugin) - For beautiful typography
+- [Video.js](https://videojs.com/) - For enhanced video playback
+- [date-fns](https://date-fns.org/) - For date manipulation and formatting
+- Custom fonts:
+  - [Bungee Inline](https://fonts.google.com/specimen/Bungee+Inline)
+  - [Inter](https://fonts.google.com/specimen/Inter)
+  - [Lora](https://fonts.google.com/specimen/Lora)
 
-![just-the-basics](https://github.com/withastro/astro/assets/2244813/a0a5533c-a856-4198-8470-2d67b1d7c554)
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
+## 📁 Project Structure
 
 ```text
 /
-├── public/
-│   └── favicon.svg
 ├── src/
-│   ├── components/
-│   │   └── Card.astro
-│   ├── layouts/
-│   │   └── Layout.astro
-│   └── pages/
-│       └── index.astro
-└── package.json
+│   ├── assets/      # Static assets like images
+│   ├── components/  # Reusable Astro components
+│   ├── content/     # Content collections
+│   ├── layouts/     # Page layouts
+│   ├── pages/       # Route pages
+│   ├── styles/      # Global styles
+│   └── util/        # Utility functions
+├── public/          # Static files
+└── dist/           # Built files (generated)
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## 🚀 Getting Started
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+1. **Prerequisites**
+   - Node.js (Latest LTS version recommended)
+   - npm (comes with Node.js)
 
-Any static assets, like images, can be placed in the `public/` directory.
+2. **Clone the repository**
+   ```sh
+   git clone https://github.com/TheBigBangCollective/TheBigBangCollective.github.io.git
+   cd TheBigBangCollective.github.io
+   ```
 
-## 🧞 Commands
+3. **Install dependencies**
+   ```sh
+   npm install
+   ```
 
-All commands are run from the root of the project, from a terminal:
+4. **Available Commands**
+   ```sh
+   # Start development server
+   npm run dev       # Runs at localhost:4321
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+   # Build for production
+   npm run build    # Outputs to ./dist/
 
-## 👀 Want to learn more?
+   # Preview production build
+   npm run preview
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+   # Run Astro commands
+   npm run astro
+   ```
+
+## 🔄 Deployment
+
+The website is automatically deployed using GitHub Actions whenever changes are pushed to the `main` branch. The deployment process:
+
+1. Triggers on push to `main` branch
+2. Builds the site using the Astro build process
+3. Deploys to GitHub Pages
+4. Makes the site available at [www.thebigbangcollective.com](https://www.thebigbangcollective.com)
+
+The deployment configuration can be found in `.github/workflows/deploy.yml`.
+
+## 🤝 Contributing
+
+We welcome contributions! If you'd like to improve the website:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+Please ensure your code follows the existing style and includes appropriate documentation.
+
+## 👥 Maintainers
+
+- [Orlando](https://github.com/Orlando-PB)
+- [Kaj Siebert](https://github.com/kws)
+
