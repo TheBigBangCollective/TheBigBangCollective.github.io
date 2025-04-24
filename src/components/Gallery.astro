@@ -1,4 +1,6 @@
 ---
+import * as fs from 'fs';
+import * as path from 'path';
 import { getImage } from "astro:assets";
 const galleryImages = import.meta.glob('../assets/gallery/*', { eager: false });
 

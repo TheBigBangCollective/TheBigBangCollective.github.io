@@ -4,9 +4,6 @@ import historyImage1 from "../assets/cern-restaurant-1.jpg";
 import historyImage2 from "../assets/womad-queue.jpg";
 import historyImage3 from "../assets/science-pavilion.jpg";
 
-const widths = [240, 540, 720, 1024, 2048];
-const sizes = `(max-width: 540px) 240px, (max-width: 720px) 540px, (max-width: 1024px) 720px, (max-width: 2048px) 1024px, 2048px`;
-
 const optimizedImage1 = await getImage({src: historyImage1, format: 'jpg', width: 1024});
 const optimizedImage2 = await getImage({src: historyImage2, format: 'jpg', width: 1024});
 const optimizedImage3 = await getImage({src: historyImage3, format: 'jpg', width: 1024});
