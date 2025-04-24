@@ -1,0 +1,84 @@
+---
+import Layout from "./Layout.astro";
+const { title } = Astro.props;
+---
+
+<Layout>
+    <header class="header header-fixed header-scrolled">
+        <a href="/">
+            <span class="bb-title bb-title-scrolled font-bold text-white drop-shadow-2xl">THE BIG BANG<br/>COLLECTIVE</span>
+        </a>
+    </header>
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="bg-white/40  backdrop-blur-sm rounded-lg p-8 prose prose-lg prose-slate dark:prose-invert">
+            <h1 class="text-4xl font-bold mb-8">{title}</h1>
+            <slot />
+        </div>
+    </main>
+</Layout>
+
+<style>
+    .header {
+        margin-top: 0;
+    }
+    
+    /* Customize prose styles */
+    :global(.prose) {
+        --tw-prose-body: #334155;
+        --tw-prose-headings: #0f172a;
+        --tw-prose-links: #0f172a;
+        --tw-prose-bold: #0f172a;
+        --tw-prose-counters: #0f172a;
+        --tw-prose-bullets: #0f172a;
+        --tw-prose-hr: #e2e8f0;
+        --tw-prose-quotes: #0f172a;
+        --tw-prose-quote-borders: #e2e8f0;
+        --tw-prose-captions: #64748b;
+        --tw-prose-code: #0f172a;
+        --tw-prose-pre-code: #e2e8f0;
+        --tw-prose-pre-bg: #1e293b;
+        --tw-prose-th-borders: #cbd5e1;
+        --tw-prose-td-borders: #e2e8f0;
+    }
+
+    :global(.dark .prose) {
+        --tw-prose-body: #e2e8f0;
+        --tw-prose-headings: #f8fafc;
+        --tw-prose-links: #f8fafc;
+        --tw-prose-bold: #f8fafc;
+        --tw-prose-counters: #f8fafc;
+        --tw-prose-bullets: #f8fafc;
+        --tw-prose-hr: #334155;
+        --tw-prose-quotes: #f8fafc;
+        --tw-prose-quote-borders: #334155;
+        --tw-prose-captions: #94a3b8;
+        --tw-prose-code: #f8fafc;
+        --tw-prose-pre-code: #f8fafc;
+        --tw-prose-pre-bg: #0f172a;
+        --tw-prose-th-borders: #334155;
+        --tw-prose-td-borders: #334155;
+    }
+
+    /* Customize table styles */
+    :global(.prose table) {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 2em 0;
+    }
+
+    :global(.prose th) {
+        background-color: var(--tw-prose-th-borders);
+        font-weight: 600;
+        text-align: left;
+        padding: 0.75em 1em;
+    }
+
+    :global(.prose td) {
+        padding: 0.75em 1em;
+        border-bottom: 1px solid var(--tw-prose-td-borders);
+    }
+
+    :global(.prose tr:last-child td) {
+        border-bottom: none;
+    }
+</style> 
