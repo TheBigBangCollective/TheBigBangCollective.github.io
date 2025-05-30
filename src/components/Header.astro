@@ -1,0 +1,25 @@
+---
+/**
+ * Slim header that always shows the page links in a fixed order.
+ * The current page is simply highlighted.
+ */
+const navPages = [
+  { path: '/2025', label: '2025' },
+  { path: '/',     label: 'About Us' }
+];
+
+const currentPath = (Astro.url.pathname.replace(/\/$/, '') || '/');
+---
+<header class="header-fixed">
+  <nav class="flex items-center space-x-3 sm:space-x-5 pr-4">
+    {navPages.map(page => (
+      <a
+        href={page.path}
+        class={`nav-link ${page.path === currentPath ? 'nav-link-active' : ''}`}
+        aria-current={page.path === currentPath ? 'page' : undefined}
+      >
+        {page.label}
+      </a>
+    ))}
+  </nav>
+</header>

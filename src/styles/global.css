@@ -10,36 +10,119 @@ body {
     font-family: 'Arial Black', Arial, sans-serif;
 }
 
+/* ───────────────── header & nav ───────────────── */
 .header-fixed {
-    @apply fixed top-0 left-0 w-full bg-transparent text-white p-4 z-40 h-0 transition duration-300 ease-in-out;
-}
-.header-scrolled {
-    @apply bg-white text-gray-800 shadow-md h-14
+    /* header sits below the hero title text, aligned RIGHT */
+    @apply fixed top-0 left-0 w-full bg-transparent text-white p-4
+           flex items-center justify-end overflow-hidden
+           h-0 z-50 transition duration-300 ease-in-out;
 }
 
+/* state after scrolling 10 px (added by scroll-header.js) */
+.header-scrolled {
+    @apply bg-white text-gray-800 shadow-md h-14;
+}
+
+/* bigger, fluid nav-link text that still scales down on tiny screens */
+.nav-link {
+    font-size: clamp(0.9rem, 3vw, 1.15rem); /* 14.4 px – 18.4 px */
+    @apply text-inherit no-underline transition-colors duration-200;
+}
+.nav-link:hover { @apply underline; }
+
+/* highlighted current page */
+.nav-link-active {
+    @apply font-semibold border-b-2 border-current pointer-events-none;
+}
+/* ───────────────── header & nav ───────────────── */
+
+
+/* ───────────────── hero title ───────────────── */
 .bb-title {
-    @apply fixed top-10 text-center;
+    /* sits ABOVE the header but ignores pointer events */
+    @apply fixed top-10 text-center z-50 pointer-events-none;
     width: 100%;
-    font-size: clamp(48px, 6vw, 112px);
+    font-size: clamp(48px, 6vw, 112px);   /* desktop/tablet default */
     font-family: 'Arial Black', Arial, sans-serif;
-    text-shadow:         
+    text-shadow:
         0 0 5px rgba(0, 0, 0, 0.5),
         0 0 10px rgba(0, 0, 0, 0.4),
         0 0 15px rgba(0, 0, 0, 0.3);
-    transition: top 0.3s ease-in-out, font-size 0.3s ease-in-out, color 0.3s ease-in-out, text-shadow 0.3s ease-in-out; 
+    transition:
+        top 0.3s ease-in-out,
+        font-size 0.3s ease-in-out,
+        color 0.3s ease-in-out,
+        text-shadow 0.3s ease-in-out;
 }
 
 .bb-title-scrolled {
-    @apply top-0 z-50;
+    /* desktop/tablet default */
+    @apply top-0 z-50 pointer-events-none;
     font-size: 1rem;
     color: #000;
     text-shadow: none;
 }
 
+/* mobile tweak – ≤ 640 px (Tailwind’s `sm` breakpoint and down) */
+@media (max-width: 640px) {
+  .bb-title-scrolled {
+      left: 0;
+      width: 40%;
+      @apply pl-3 text-left whitespace-nowrap pointer-events-none;
+      /* fluid font: 12 px → 16 px */
+      font-size: clamp(0.75rem, 6vw, 1rem);
+  }
+}
+
+@media (max-width: 400px) {
+  /* un-scrolled hero title needs to shrink a bit more */
+  .bb-title {
+      font-size: clamp(32px, 10vw, 48px); /* 320 px viewport → 32 px font */
+  }
+    .bb-title-scrolled {
+      left: 0;
+      width: 20%;
+      @apply pl-3 text-left whitespace-nowrap pointer-events-none;
+      font-size: clamp(0.75rem, 6vw, 1rem);
+  }
+
+}
+
+/* ───────────────── misc ───────────────── */
 .material-symbols-outlined {
   font-variation-settings:
-  'FILL' 1,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 24
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+/* ───────────────── refined timeline visuals ───────────────── */
+/* ───────────────── timeline visuals ───────────────── */
+.timeline-wrapper {
+  @apply relative max-w-screen-lg mx-auto px-4 sm:px-6 border-l-2 border-gray-300;
+}
+
+/* each <li> has no left-padding now; the card itself supplies the indent */
+.timeline-item {
+  @apply relative mb-12;
+}
+
+.timeline-card {
+  @apply ml-8 sm:ml-10 flex flex-col sm:flex-row gap-4 rounded-lg shadow-md p-4;
+}
+
+/* dot sits right on the border and inherits its colour inline */
+.timeline-dot {
+  @apply absolute left-0 top-2 w-5 h-5 rounded-full transform -translate-x-1/2;
+}
+
+
+/* card container – responsive flex: column on xs, row on ≥sm */
+.timeline-card {
+  @apply flex flex-col sm:flex-row gap-4 rounded-lg shadow-md p-4;
+}
+/* larger, centred intro on the 2025 landing page */
+.intro-copy {
+  @apply max-w-screen-md mx-auto text-center
+         text-lg sm:text-xl md:text-2xl leading-relaxed;
 }
