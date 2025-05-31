@@ -8,12 +8,22 @@ interface Festival {
   logo?:  string;
   images?: { src: string; title: string; desc?: string }[];
   video?:  string;
-  bg?:     string;     // background colour
-  text?:   string;     // text colour
+  bg?:     string;
+  text?:   string;    
   description: string;
+  country:   string;
 }
 const { festivals }:{ festivals: Festival[] } = Astro.props;
 
+// helper: convert "CZ" → "🇨🇿" (Not currently needed)
+function isoToFlagEmoji(countryCode: string) {
+  return countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 0x1f1e6 + (char.charCodeAt(0) - 65))
+    .map(cp => String.fromCodePoint(cp))
+    .join('');
+}
 // Sort chronologically
 festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf());
 ---
@@ -23,9 +33,11 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
     const bg   = f.bg   || '#f3f4f6';
     const text = f.text || 'inherit';
 
+
     return (
       <li class="timeline-item">
-        <div class="timeline-dot" style={`background-color:${bg}`}></div>
+      <span class="timeline-connector"></span>
+      <span class="timeline-branch-circle"></span>
 
         <div
           class="timeline-card"

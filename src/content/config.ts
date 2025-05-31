@@ -36,7 +36,8 @@ const yearsCollection = defineCollection({
         video:       z.string().url().optional(),
         bg:          z.string().optional(),
         text:        z.string().optional(),
-        description: z.string()
+        description: z.string(),
+        country: z.string().optional(),
       })
     )
   })
