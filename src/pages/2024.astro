@@ -1,0 +1,21 @@
+---
+import FrontPage  from "../layouts/FrontPage.astro";
+import Headline   from "../components/Headline.astro";
+import Timeline   from "../components/Timeline.astro";
+import { getEntryBySlug } from "astro:content";
+
+/* get the 2024 markdown entry */
+const { data } = await getEntryBySlug('years', '2024');
+---
+
+<FrontPage>
+  <div class="text-gray-800 p-8 pt-2">
+    <Headline>{data.title}</Headline>
+
+      <p class="intro-copy">
+        {data.intro}
+      </p>
+    </div>
+
+  <Timeline festivals={data.festivals} />
+</FrontPage>

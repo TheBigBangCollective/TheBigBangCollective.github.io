@@ -69,21 +69,16 @@ body {
   .bb-title-scrolled {
       left: 0;
       width: 40%;
-      @apply pl-3 text-left whitespace-nowrap pointer-events-none;
-      /* fluid font: 12 px → 16 px */
+      @apply pl-3 whitespace-nowrap pointer-events-none;
       font-size: clamp(0.75rem, 6vw, 1rem);
   }
 }
 
 @media (max-width: 400px) {
-  /* un-scrolled hero title needs to shrink a bit more */
   .bb-title {
       font-size: clamp(32px, 10vw, 48px); /* 320 px viewport → 32 px font */
   }
     .bb-title-scrolled {
-      left: 0;
-      width: 20%;
-      @apply pl-3 text-left whitespace-nowrap pointer-events-none;
       font-size: clamp(0.75rem, 6vw, 1rem);
   }
 
