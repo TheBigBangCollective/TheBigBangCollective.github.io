@@ -120,7 +120,7 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
             )}
 
             {/* main text / video – shifts right only when gallery exists */}
-            <div class={`flex-1 min-h-0 ${f.images?.length ? 'sm:pl-1' : ''}`}>
+            <div class={`timeline-text flex-1 min-h-0 ${f.images?.length ? 'sm:pl-1' : ''}`}>
               <p class="text-justify whitespace-pre-line">{f.description}</p>
 
               {f.video && (
@@ -293,5 +293,64 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
       currentIndex++;
       updateLightbox();
     }
+  });
+</script>
+
+<script>
+  // Compute “text+video” height as before
+  function computeTextVideoHeight(textPara, videoIframe) {
+    const paraHeight = textPara.getBoundingClientRect().height;
+    if (!videoIframe) return paraHeight;
+    const videoWidth  = videoIframe.offsetWidth;
+    const videoHeight = (videoWidth * 9) / 16;
+    return paraHeight + 16 + videoHeight; // plus 16px margin‐top
+  }
+
+  function clampSingleGallery(item) {
+    const textPara    = item.querySelector('.timeline-text p');
+    const videoIframe = item.querySelector('.timeline-text iframe');
+    const gallery     = item.querySelector('.gallery');
+    if (!textPara || !gallery) return;
+
+    const imgs = gallery.querySelectorAll('img');
+
+    if (imgs.length === 1 && !videoIframe) {
+      // Case A: single image, no video → show it at full height
+      gallery.style.maxHeight = 'none';
+      const fullHeight = gallery.scrollHeight;
+      gallery.style.maxHeight = `${fullHeight}px`;
+    }
+    else if (videoIframe) {
+      // Case B: video present (regardless of how many images) → text+video formula
+      const needed = computeTextVideoHeight(textPara, videoIframe);
+      const minHeight = gallery.offsetWidth * 0.67;
+      gallery.style.maxHeight = `${Math.max(needed, minHeight)}px`;
+
+    }
+    else {
+      // Case C: multiple images, no video → clamp to match text‐column height
+      const textHeight = textPara.getBoundingClientRect().height;
+      const minHeight = gallery.offsetWidth * 0.67;
+      gallery.style.maxHeight = `${Math.max(textHeight, minHeight)}px`;
+    }
+
+    // Ensure the gallery is visible (desktop baseline is already 100px via CSS)
+    gallery.classList.add('clamped');
+  }
+
+  window.addEventListener('load', () => {
+    document.querySelectorAll('.timeline-item').forEach(item => {
+      // Initial clamp once everything has loaded
+      clampSingleGallery(item);
+
+      // Watch the paragraph for any reflows (e.g. webfonts)
+      const textPara = item.querySelector('.timeline-text p');
+      if (textPara) {
+        new ResizeObserver(() => clampSingleGallery(item)).observe(textPara);
+      }
+
+      // On window resize (video or text wrapping changes), re‐clamp
+      window.addEventListener('resize', () => clampSingleGallery(item));
+    });
   });
 </script>

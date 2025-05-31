@@ -261,3 +261,51 @@ body {
   @apply max-w-screen-md mx-auto text-center
          text-lg sm:text-xl md:text-2xl leading-relaxed;
 }
+
+/* ---------------------------------------------------------------- */
+/* Gallery      */           
+/* ---------------------------------------------------------------- */
+
+.gallery {
+  width: 100%;
+  height: 150px;            /* always 150px tall on mobile */
+  overflow-x: auto;         /* scroll left/right if wider than container */
+  overflow-y: hidden;       /* never show vertical scrollbar on mobile */
+  display: block;
+  scroll-behavior: smooth;  /* optional: smooth scrolling */
+  opacity: 0;
+  transition: opacity 0.1s ease-in-out; /* fade in when revealed */
+
+}
+
+@media (min-width: 640px) {
+  .gallery {
+    width: 30%;            /* take up 30% of the container’s width */
+    height: 100px; 
+    max-height: 100px;         /* let JS set the max-height (via inline style) */
+    overflow-x: hidden;    /* hide horizontal scroll on desktop */
+    overflow-y: auto;      /* allow vertical scrolling if content overflows */
+  }
+}
+
+.gallery.clamped {
+  opacity: 1;
+}
+
+.gallery::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;      
+}
+.gallery::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.6); /* gray-400 at 60% opacity */
+  border-radius: 3px;
+}
+.gallery::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Firefox: thin scrollbar */
+.gallery {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.6) transparent;
+}
