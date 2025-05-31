@@ -32,8 +32,7 @@ const yearsCollection = defineCollection({
         start:       z.date(),
         end:         z.date(),
         logo:        z.string().optional(),
-        image:       z.string().optional(),   // LEGACY 1-image field (kept)
-        gallery:     z.array(galleryItem).optional(),
+        images:      z.array(galleryItem).optional(),
         video:       z.string().url().optional(),
         bg:          z.string().optional(),
         text:        z.string().optional(),

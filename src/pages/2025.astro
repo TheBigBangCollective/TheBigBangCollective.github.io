@@ -10,8 +10,13 @@ const { data } = await getEntryBySlug('years', '2025');
 ---
 
 <FrontPage>
-  <Headline>{data.title}</Headline>
-<p class="intro-copy mb-8">{data.intro}</p>
+  <div class="px-4 sm:px-6 md:px-8 rounded-xl bg-gray-100 text-gray-800 p-2 m-5 pb-10 shadow">
+    <Headline>{data.title}</Headline>
+
+      <p class="intro-copy">
+        {data.intro}
+      </p>
+    </div>
 
   <Timeline festivals={data.festivals} />
 </FrontPage>

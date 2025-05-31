@@ -1,10 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+/* 
 body {
     cursor: url('/radioactive.svg') 8 8, auto;
 }
+*/
 
 .font-bungee {
     font-family: 'Arial Black', Arial, sans-serif;
@@ -99,7 +100,18 @@ body {
 /* ───────────────── refined timeline visuals ───────────────── */
 /* ───────────────── timeline visuals ───────────────── */
 .timeline-wrapper {
-  @apply relative max-w-screen-lg mx-auto px-4 sm:px-6 border-l-2 border-gray-300;
+  /* keep the layout rules, drop the border – we’ll draw our own line */
+  position: relative;
+  width: 100%;
+  padding: 40px 20px;
+}
+
+/* New vertical “rail” */
+.timeline-wrapper::before {
+  content: '';
+  @apply absolute inset-y-0 left-8 w-px bg-gray-300;
+  margin-top: 40px;
+  margin-bottom: 90px;
 }
 
 /* each <li> has no left-padding now; the card itself supplies the indent */
@@ -108,19 +120,17 @@ body {
 }
 
 .timeline-card {
-  @apply ml-8 sm:ml-10 flex flex-col sm:flex-row gap-4 rounded-lg shadow-md p-4;
+  @apply ml-8 sm:ml-10 flex flex-col items-stretch
+         gap-4 rounded-lg shadow-md p-4 min-h-0;
 }
 
 /* dot sits right on the border and inherits its colour inline */
 .timeline-dot {
-  @apply absolute left-0 top-2 w-5 h-5 rounded-full transform -translate-x-1/2;
+  /* park the centre of the dot on the rail we just drew                  */
+  @apply absolute w-5 h-5 rounded-full  shadow;
+  left: 2px;
 }
 
-
-/* card container – responsive flex: column on xs, row on ≥sm */
-.timeline-card {
-  @apply flex flex-col sm:flex-row gap-4 rounded-lg shadow-md p-4;
-}
 /* larger, centred intro on the 2025 landing page */
 .intro-copy {
   @apply max-w-screen-md mx-auto text-center

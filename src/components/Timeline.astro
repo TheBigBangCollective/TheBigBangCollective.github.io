@@ -1,68 +1,285 @@
 ---
+import { Image } from 'astro:assets';
+
 interface Festival {
   name: string;
   start: string;
   end:   string;
-  logo?: string;
-  image?: string;
-  video?: string;
-  bg?:   string;   // NEW  background colour
-  text?: string;   // NEW  text colour
+  logo?:  string;
+  images?: { src: string; title: string; desc?: string }[];
+  video?:  string;
+  bg?:     string;     // background colour
+  text?:   string;     // text colour
   description: string;
 }
 const { festivals }:{ festivals: Festival[] } = Astro.props;
 
-/* chronological order */
-festivals.sort((a,b)=>new Date(a.start).valueOf()-new Date(b.start).valueOf());
+// Sort chronologically
+festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf());
 ---
 
 <ul class="timeline-wrapper">
-  {festivals.map(f => {
-    const bg   = f.bg   || '#f3f4f6';   // pastel default
-    const text = f.text || 'inherit';   // inherits parent colour
-    const dot  = bg;
+  {festivals.map((f, festivalIdx) => {
+    const bg   = f.bg   || '#f3f4f6';
+    const text = f.text || 'inherit';
+
     return (
       <li class="timeline-item">
-        <div class="timeline-dot" style={`background-color:${dot}`}></div>
+        <div class="timeline-dot" style={`background-color:${bg}`}></div>
 
         <div
           class="timeline-card"
           style={`background-color:${bg}; color:${text}`}
         >
+          {/* ───────── HEADER : logo + title + dates ───────── */}
+          <div class="flex items-center gap-4 mb-2">
           {f.logo && (
-            <img src={`/src/assets/${f.logo}`} alt={`${f.name} logo`}
-                 class="w-14 h-14 object-contain shrink-0"/>
+            <Image
+              src={`/src/assets/${f.logo}`}
+              alt={`${f.name} logo`}
+              width={56}      // 14 × 4 (Tailwind’s w-14, h-14 are 3.5rem = 56px)
+              height={56}
+              loading="lazy"
+              class="object-contain shrink-0"
+            />
           )}
 
-          {f.image && (
-            <img src={`/src/assets/${f.image}`} alt={f.name}
-                 class="w-full sm:w-56 h-36 object-cover rounded-md shadow mb-3 sm:mb-0"/>
-          )}
+            <div>
+              <h3 class="text-lg font-semibold leading-tight">{f.name}</h3>
+              <p class="text-sm opacity-80">
+                {new Date(f.start).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                &nbsp;–&nbsp;
+                {new Date(f.end).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
+            </div>
+          </div>
 
-          <div class="flex-1">
-            <h3 class="text-lg font-semibold leading-tight">{f.name}</h3>
-            <p class="text-sm opacity-80 mb-2">
-              {new Date(f.start).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
-              &nbsp;–&nbsp;
-              {new Date(f.end).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
-            </p>
+          {/* ───────── BODY : gallery (optional) + description/video ───────── */}
+          <div class="flex flex-col sm:flex-row gap-4">
+            {f.images?.length && (
+              <div
+                class="gallery flex-shrink-0
+                       w-full h-[150px]                      /* mobile: strip */
+                       sm:w-[30%] sm:self-stretch sm:h-auto /* desktop: 200px×card-height */
+                       rounded-md overflow-hidden
+                       sm:overflow-y-auto"                
+                data-festival-index={festivalIdx}
+              >
+                <div
+                  class="flex flex-row sm:flex-col
+                         gap-2 p-1
+                         h-full w-full
+                         overflow-x-auto sm:overflow-x-hidden sm:overflow-y-auto
+                         snap-x sm:snap-y snap-mandatory"
+                >
+{f.images.map(({ src, title }, i) => (
+  <div
+    key={i}
+    class="relative flex-none h-full w-auto sm:w-full sm:h-auto snap-center group"
+  >
+    {/* ─────── the image itself ─────── */}
+    <img
+      src={`/src/assets/${src}`}
+      alt={title || `${f.name} image ${i + 1}`}
+      data-title={title}
+      data-index={i}
+      class="flex-none rounded-md cursor-pointer
+             h-full w-auto object-contain     
+             sm:w-full sm:h-auto sm:object-cover"
+    />
 
-            <p class="text-justify whitespace-pre-line">{f.description}</p>
+    {/* ─────── hover‐title overlay ─────── */}
+    <div
+      class="absolute inset-0
+             bg-black bg-opacity-50
+             opacity-0 group-hover:opacity-100
+             transition-opacity
+             flex items-center justify-center
+             rounded-md
+             pointer-events-none"
+    >
+      <span class="text-white text-sm px-2 text-center">{title}</span>
+    </div>
+  </div>
+))}
 
-            {f.video && (
-              <div class="mt-4">
-                <iframe
-                  src={f.video}
-                  loading="lazy"
-                  class="w-full aspect-video rounded-md"
-                  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen
-                />
+                </div>
               </div>
             )}
+
+            {/* main text / video – shifts right only when gallery exists */}
+            <div class={`flex-1 min-h-0 ${f.images?.length ? 'sm:pl-1' : ''}`}>
+              <p class="text-justify whitespace-pre-line">{f.description}</p>
+
+              {f.video && (
+                <div class="mt-4">
+                  <iframe
+                    src={f.video}
+                    loading="lazy"
+                    class="w-full aspect-video rounded-md"
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </li>
     );
   })}
 </ul>
+
+<!-- ──────────────────────────────────────────────────────────────────── -->
+<!--                       LIGHTBOX / MODAL VIEW                        -->
+<!-- ──────────────────────────────────────────────────────────────────── -->
+<!-- This entire block should go right AFTER the </ul> above.          -->
+<div
+  id="lightbox"
+  class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center p-4"
+>
+  {/* Close “×” button */}
+  <button
+    id="lightbox-close"
+    class="absolute top-4 right-4 text-white text-2xl font-bold focus:outline-none"
+    aria-label="Close"
+  >
+    &times;
+  </button>
+
+  <!-- Left arrow -->
+  <button
+    id="lightbox-prev"
+    class="absolute left-4 top-1/2 transform -translate-y-1/2
+           p-4 focus:outline-none"
+    aria-label="Previous Image"
+  >
+    <span class="text-white text-3xl">&#10094;</span>
+  </button>
+
+  <!-- Right arrow -->
+  <button
+    id="lightbox-next"
+    class="absolute right-4 top-1/2 transform -translate-y-1/2
+           p-4 focus:outline-none"
+    aria-label="Next Image"
+  >
+    <span class="text-white text-3xl">&#10095;</span>
+  </button>
+
+
+  {/* The displayed image */}
+  <img
+    id="lightbox-img"
+    src=""
+    alt=""
+    class="max-h-full max-w-full rounded-md shadow-lg object-contain"
+  />
+
+  {/* Caption bar at bottom */}
+  <div
+    id="lightbox-caption"
+    class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded"
+  ></div>
+</div>
+
+<!-- ──────────────────────────────────────────────────────────────────── -->
+<!--                         LIGHTBOX JavaScript                         -->
+<!-- ──────────────────────────────────────────────────────────────────── -->
+<script type="module">
+  // Keep track of the currently open gallery & image index
+  let currentGalleryImages = [];
+  let currentIndex = 0;
+
+  // Grab references to lightbox elements
+  const lightbox = document.getElementById('lightbox');
+  const lbImg     = document.getElementById('lightbox-img');
+  const lbCaption = document.getElementById('lightbox-caption');
+  const btnClose  = document.getElementById('lightbox-close');
+  const btnPrev   = document.getElementById('lightbox-prev');
+  const btnNext   = document.getElementById('lightbox-next');
+
+  // Open the lightbox given an array of { src, title } and a start index
+  function openLightbox(galleryImgs, index) {
+    currentGalleryImages = galleryImgs;
+    currentIndex = index;
+    updateLightbox();
+    lightbox.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+  }
+
+  // Close the lightbox
+  function closeLightbox() {
+    lightbox.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  // Update the displayed image, caption, and arrow visibility
+  function updateLightbox() {
+    const { src, title } = currentGalleryImages[currentIndex];
+    lbImg.src = src;
+    lbImg.alt = title || '';
+    lbCaption.textContent = title || '';
+
+    btnPrev.style.display = currentIndex > 0 ? 'block' : 'none';
+    btnNext.style.display = currentIndex < currentGalleryImages.length - 1 ? 'block' : 'none';
+  }
+
+  // Delegate clicks on any <img> inside .gallery
+  document.addEventListener('click', (e) => {
+    const clickedImg = e.target.closest('.gallery img');
+    if (!clickedImg) return;
+
+    // Build an array of { src, title } for all thumbnails in the same gallery
+    const galleryContainer = clickedImg.closest('.gallery');
+    const imgs = Array.from(galleryContainer.querySelectorAll('img')).map((el) => ({
+      src: el.src,
+      title: el.dataset.title || ''
+    }));
+
+    // Determine which index in that array was clicked
+    const idx = parseInt(clickedImg.dataset.index, 10);
+
+    openLightbox(imgs, idx);
+  });
+
+  // Close when “×” is clicked
+  btnClose.addEventListener('click', closeLightbox);
+
+  // Prev arrow click
+  btnPrev.addEventListener('click', () => {
+    if (currentIndex > 0) {
+      currentIndex--;
+      updateLightbox();
+    }
+  });
+
+  // Next arrow click
+  btnNext.addEventListener('click', () => {
+    if (currentIndex < currentGalleryImages.length - 1) {
+      currentIndex++;
+      updateLightbox();
+    }
+  });
+
+  // Clicking outside the image (on the dark backdrop) closes
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) {
+      closeLightbox();
+    }
+  });
+
+  // Keyboard navigation: Esc to close, arrows to navigate
+  document.addEventListener('keydown', (e) => {
+    if (lightbox.classList.contains('hidden')) return;
+    if (e.key === 'Escape') {
+      closeLightbox();
+    } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+      currentIndex--;
+      updateLightbox();
+    } else if (e.key === 'ArrowRight' && currentIndex < currentGalleryImages.length - 1) {
+      currentIndex++;
+      updateLightbox();
+    }
+  });
+</script>
