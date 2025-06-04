@@ -14,13 +14,14 @@ const festivalCollection = defineCollection({
   })
 });
 
-/* -------- years collection with gallery support -------- */
+/* -------- reusable gallery item -------- */
 const galleryItem = z.object({
-  src:   z.string(),          // e.g. photos/ostrava-dj.jpg
-  title: z.string(),          // shown on hover
-  desc:  z.string().optional()// future use / captions
+  src:   z.string(),            // e.g. photos/ostrava-dj.jpg
+  title: z.string(),            // shown on hover
+  desc:  z.string().optional()  // future use / captions
 });
 
+/* -------- years collection (now with link support) -------- */
 const yearsCollection = defineCollection({
   type: 'content',
   schema: z.object({
@@ -34,10 +35,13 @@ const yearsCollection = defineCollection({
         logo:        z.string().optional(),
         images:      z.array(galleryItem).optional(),
         video:       z.string().url().optional(),
+        video_ratio: z.string().regex(/^\d+\/\d+$/).optional(),
+        link: z
+          .object({url:  z.string(),text: z.string()}).optional(),
         bg:          z.string().optional(),
         text:        z.string().optional(),
         description: z.string(),
-        country: z.string().optional(),
+        country:     z.string().optional(),
       })
     )
   })

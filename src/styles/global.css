@@ -304,3 +304,6 @@ body {
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 163, 175, 0.6) transparent;
 }
+:target {
+  scroll-margin-top: 4rem;  /* height of your sticky nav */
+}
