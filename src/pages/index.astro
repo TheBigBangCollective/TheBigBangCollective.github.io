@@ -1,20 +1,21 @@
 ---
-import ContactUs from "../components/ContactUs.astro";
-import Gallery from "../components/Gallery.astro";
-import Headline from "../components/Headline.astro";
-import History from "../components/History.astro";
-import FrontPage from "../layouts/FrontPage.astro";
-import Welcome from "../components/Welcome.astro";
+import FrontPage  from "../layouts/FrontPage.astro";
+import Headline   from "../components/Headline.astro";
+import Timeline   from "../components/Timeline.astro";
+import { getEntryBySlug } from "astro:content";
+
+/* get the 2025 markdown entry */
+const { data } = await getEntryBySlug('years', '2025');
 ---
 
 <FrontPage>
-  <Welcome />
-  <Headline>Our History</Headline>
-  <History />
+  <div class="text-gray-800 p-8 pt-2">
+    <Headline>{data.title}</Headline>
 
-  <Headline>Gallery</Headline>
-  <Gallery />
-  <Headline>Contact Us</Headline>
+      <p class="intro-copy">
+        {data.intro}
+      </p>
+    </div>
 
-  <ContactUs />
+  <Timeline festivals={data.festivals} />
 </FrontPage>
