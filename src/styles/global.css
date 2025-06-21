@@ -307,3 +307,8 @@ body {
 :target {
   scroll-margin-top: 4rem;  /* height of your sticky nav */
 }
+.full-width-block {
+  @apply relative left-1/2 right-1/2 ml-[-50vw] mr-[-50vw] w-screen;
+}
+
+

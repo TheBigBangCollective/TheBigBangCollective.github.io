@@ -1,0 +1,206 @@
+---
+import Headline from "./Headline.astro";
+
+/** Props expected from the parent page */
+const {
+  collaborators = {},
+  coords = {},
+  affiliationLinks = {},
+} = Astro.props;
+---
+
+<section class="py-16 bg-gray-100">
+  <Headline>Our International Collaborators</Headline>
+  <p class="intro-copy my-12 mx-auto px-4">Click on a country to see the team.</p>
+
+  <div class="max-w-screen-xl mx-auto px-4 flex flex-col lg:flex-row gap-10">
+    <!-- Square map with overlay dots -->
+    <div class="relative w-full max-w-3xl aspect-square">
+      <img
+        src="/map.png"
+        alt="Blank outline map of Europe with collaborator markers"
+        class="w-full h-full object-contain select-none pointer-events-none"
+      />
+
+      <!-- Overlay SVG for interactive dots -->
+      <svg
+        id="team-map"
+        viewBox="0 0 768 768"
+        class="absolute inset-0 w-full h-full"
+      >
+        {Object.keys(coords).map((country) => (
+          <circle
+            key={country}
+            cx={coords[country].x}
+            cy={coords[country].y}
+            r="10"                       /* default radius */
+            class="fill-gray-800 cursor-pointer transition-colors"
+            data-country={country}
+          />
+        ))}
+      </svg>
+    </div>
+
+    <!-- Country lists -->
+    <div id="collaborator-lists" class="flex-1 space-y-8">
+      {Object.entries(collaborators).map(([country, people], idx) => (
+        <div
+          id={`list-${country.replace(/\s+/g, "-").toLowerCase()}`}
+          class={`team-list ${idx === 0 ? "block" : "hidden"}`}
+        >
+          <h3 class="font-bungee text-xl mb-4 text-center">{country}</h3>
+          <ul
+  class="grid gap-6 justify-center
+         [grid-template-columns:repeat(auto-fit,minmax(10rem,1fr))]">
+            {people.map((p) => (
+              <li class="team-card p-4 rounded font-bungee text-gray-900 bg-white/50">
+                <h4>{p.name}</h4>
+                {p.affiliation && (
+                  <p class="text-sm opacity-90">
+                    <a
+                      href={affiliationLinks[p.affiliation] ?? "#"}
+                      class="underline"
+                    >
+                      {p.affiliation}
+                    </a>
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+
+<!-- Map-interaction script -->
+<script type="module" client:load>
+  /* Radii */
+  const R_DEFAULT         = 10;
+  const R_HOVER           = 15;
+  const R_SELECTED        = 15;
+  const R_SELECTED_HOVER  = 18;
+
+  const svg   = document.getElementById("team-map");
+  const dots  = svg.querySelectorAll("[data-country]");
+  const lists = document.querySelectorAll(".team-list");
+
+  /* ------------------------------------------------------------------ */
+  /* Helpers                                                            */
+  /* ------------------------------------------------------------------ */
+  let currentSelected = null;
+  let currentHover    = null;
+
+  function show(country) {
+    lists.forEach((el) =>
+      el.classList.toggle(
+        "hidden",
+        el.id !== `list-${country.replace(/\\s+/g, "-").toLowerCase()}`
+      )
+    );
+  }
+
+  function selectDot(dot) {
+    if (currentSelected) {
+      currentSelected.setAttribute("r", R_DEFAULT);
+      currentSelected.classList.remove("fill-red-600", "ring", "ring-2");
+    }
+    currentSelected = dot;
+    currentSelected.setAttribute("r", R_SELECTED);
+    currentSelected.classList.add("fill-red-600", "ring", "ring-2");
+  }
+
+  function highlight(dot) {
+    /* Reset previous hover */
+    if (currentHover) {
+      if (currentHover === currentSelected) {
+        currentHover.setAttribute("r", R_SELECTED);
+      } else {
+        currentHover.setAttribute("r", R_DEFAULT);
+        currentHover.classList.remove("ring", "ring-2");
+      }
+    }
+
+    currentHover = dot;
+
+    /* Apply new hover */
+    if (currentHover) {
+      if (currentHover === currentSelected) {
+        currentHover.setAttribute("r", R_SELECTED_HOVER);
+      } else {
+        currentHover.setAttribute("r", R_HOVER);
+        currentHover.classList.add("ring", "ring-2");
+      }
+    }
+  }
+
+  /* Convert page-px → SVG view-box coords */
+  function svgCoords(evt) {
+    const rect = svg.getBoundingClientRect();
+    const scaleX = 768 / rect.width;
+    const scaleY = 768 / rect.height;
+    return {
+      x: (evt.clientX - rect.left) * scaleX,
+      y: (evt.clientY - rect.top) * scaleY,
+    };
+  }
+
+  /* Nearest dot (no threshold) */
+  function nearestDot(x, y) {
+    let nearest = null;
+    let minDist = Infinity;
+    dots.forEach((d) => {
+      const dx = x - +d.getAttribute("cx");
+      const dy = y - +d.getAttribute("cy");
+      const dist = Math.hypot(dx, dy);
+      if (dist < minDist) {
+        minDist = dist;
+        nearest = d;
+      }
+    });
+    return nearest;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Event listeners                                                    */
+  /* ------------------------------------------------------------------ */
+
+  /* Mouse-move: always highlight closest */
+  svg.addEventListener("mousemove", (e) => {
+    const { x, y } = svgCoords(e);
+    highlight(nearestDot(x, y));
+  });
+
+  /* Mouse-leave: clear hover state */
+  svg.addEventListener("mouseleave", () => highlight(null));
+
+  /* Click anywhere: select closest */
+  svg.addEventListener("click", (e) => {
+    const { x, y } = svgCoords(e);
+    const dot = nearestDot(x, y);
+    if (dot) {
+      show(dot.dataset.country);
+      selectDot(dot);
+    }
+  });
+
+  /* Direct dot click (touch / keyboard) */
+  dots.forEach((d) =>
+    d.addEventListener("click", (e) => {
+      e.stopPropagation();   // avoid double-handling
+      show(d.dataset.country);
+      selectDot(d);
+    })
+  );
+
+  /* Default selection */
+  if (dots.length) selectDot(dots[0]);
+</script>
+
+<!-- Card sizing & responsive text -->
+<style>
+  .team-card{min-width:10rem;text-align:center;}
+  .team-card h4,.team-card h3{font-size:clamp(0.75rem,2.5vw,1rem);}
+</style>
+
+</section>
