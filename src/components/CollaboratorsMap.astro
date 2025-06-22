@@ -1,21 +1,18 @@
 ---
 import Headline from "./Headline.astro";
 
-/** Props expected from the parent page */
-const {
-  collaborators = {},
-  coords = {},
-  affiliationLinks = {},
-} = Astro.props;
+const { collaborators = {}, coords = {}, affiliationLinks = {} } = Astro.props;
 ---
 
-<section class="py-16 bg-gray-100">
+<section class="full-width-block bg-cyan-400/30 py-16">
   <Headline>Our International Collaborators</Headline>
   <p class="intro-copy my-12 mx-auto px-4">Click on a country to see the team.</p>
 
-  <div class="max-w-screen-xl mx-auto px-4 flex flex-col lg:flex-row gap-10">
+  <div class="max-w-screen-xl mx-auto px-4 flex flex-col lg:flex-row items-center lg:items-start gap-10">
     <!-- Square map with overlay dots -->
-    <div class="relative w-full max-w-3xl aspect-square">
+    <div
+      class="relative w-full lg:max-w-3xl aspect-square mx-auto"
+    >
       <img
         src="/map.png"
         alt="Blank outline map of Europe with collaborator markers"
@@ -33,8 +30,8 @@ const {
             key={country}
             cx={coords[country].x}
             cy={coords[country].y}
-            r="10"                       /* default radius */
-            class="fill-gray-800 cursor-pointer transition-colors"
+            r="10"
+            class="fill-cyan-600 cursor-pointer transition-colors"
             data-country={country}
           />
         ))}
@@ -48,18 +45,20 @@ const {
           id={`list-${country.replace(/\s+/g, "-").toLowerCase()}`}
           class={`team-list ${idx === 0 ? "block" : "hidden"}`}
         >
-          <h3 class="font-bungee text-xl mb-4 text-center">{country}</h3>
+          <h3 class="font-bungee text-2xl sm:text-3xl mb-4 text-center">
+            {country}
+          </h3>
           <ul
-  class="grid gap-6 justify-center
-         [grid-template-columns:repeat(auto-fit,minmax(10rem,1fr))]">
+            class="grid gap-6 justify-center [grid-template-columns:repeat(auto-fit,minmax(10rem,1fr))]"
+          >
             {people.map((p) => (
-              <li class="team-card p-4 rounded font-bungee text-gray-900 bg-white/50">
+              <li class="team-card p-4 rounded font-bungee text-gray-900 bg-gray-100/80 text-center">
                 <h4>{p.name}</h4>
                 {p.affiliation && (
                   <p class="text-sm opacity-90">
                     <a
                       href={affiliationLinks[p.affiliation] ?? "#"}
-                      class="underline"
+                      class="text-xs opacity-90 no-underline"
                     >
                       {p.affiliation}
                     </a>
@@ -73,29 +72,108 @@ const {
     </div>
   </div>
 
-<!-- Map-interaction script -->
+ <!-- Interaction script -->
 <script type="module" client:load>
-  /* Radii */
+  /* ------------------------------------------------------------------ */
+  /* Constants                                                           */
+  /* ------------------------------------------------------------------ */
   const R_DEFAULT         = 10;
   const R_HOVER           = 15;
   const R_SELECTED        = 15;
   const R_SELECTED_HOVER  = 18;
 
-  const svg   = document.getElementById("team-map");
-  const dots  = svg.querySelectorAll("[data-country]");
-  const lists = document.querySelectorAll(".team-list");
+  const PLANE_FILL        = "#155e75";      // Tailwind cyan-800
+  const PLANE_DURATION    = 7800;           // ms in flight (slightly < 5 s)
+  const INTERVAL_DELAY    = 8000;           // 5 s between hops
+  const IDLE_RESTART_MS   = 30000;          // restart auto-cycle after 30 s
 
   /* ------------------------------------------------------------------ */
-  /* Helpers                                                            */
+  /* DOM hooks                                                           */
+  /* ------------------------------------------------------------------ */
+  const svg        = document.getElementById("team-map");
+  const dots       = Array.from(svg.querySelectorAll("[data-country]"));
+  const lists      = document.querySelectorAll(".team-list");
+
+  /* ------------------------------------------------------------------ */
+  /* State                                                               */
   /* ------------------------------------------------------------------ */
   let currentSelected = null;
   let currentHover    = null;
 
+  let animId          = null;   // rAF id for plane animation
+  let autoInterval    = null;   // setInterval id
+  let selectTimeout   = null;   // setTimeout id for delayed select
+  let restartTimeout  = null;   // idle-restart timer
+
+  /* ------------------------------------------------------------------ */
+  /* Plane element                                                       */
+  /* ------------------------------------------------------------------ */
+  const plane = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  plane.setAttribute(
+    "d",
+    "M0,-6 L14,0 L0,6 L2,0 Z"              // little paper-plane
+  );
+  plane.setAttribute("fill", PLANE_FILL);
+  plane.setAttribute("opacity", 0);
+  plane.style.pointerEvents = "none";
+  svg.appendChild(plane);
+
+  /* ------------------------------------------------------------------ */
+  /* Plane animation                                                     */
+  /* ------------------------------------------------------------------ */
+  function flyPlane(fromDot, toDot, duration = PLANE_DURATION) {
+    if (!fromDot || !toDot || fromDot === toDot) return;
+
+    // Stop any in-flight animation
+    if (animId) cancelAnimationFrame(animId);
+
+    const start = {
+      x: +fromDot.getAttribute("cx"),
+      y: +fromDot.getAttribute("cy"),
+    };
+    const end = {
+      x: +toDot.getAttribute("cx"),
+      y: +toDot.getAttribute("cy"),
+    };
+    const dx    = end.x - start.x;
+    const dy    = end.y - start.y;
+    const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+    plane.setAttribute("opacity", 1);
+    plane.setAttribute("transform", `translate(${start.x} ${start.y}) rotate(${angle})`);
+
+    let t0 = null;
+    function step(ts) {
+      if (!t0) t0 = ts;
+      const progress = Math.min((ts - t0) / duration, 1);
+      const x = start.x + dx * progress;
+      const y = start.y + dy * progress;
+
+      // Fade out for the last 15 % of the trip
+      if (progress > 0.80) {
+        plane.setAttribute("opacity", (1 - progress -0.1) / 0.15);
+      }
+
+      plane.setAttribute("transform", `translate(${x} ${y}) rotate(${angle})`);
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(step);
+      } else {
+        plane.setAttribute("opacity", 0);   // hide on arrival
+        animId = null;
+      }
+    }
+    animId = requestAnimationFrame(step);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Show / select / highlight helpers                                   */
+  /* ------------------------------------------------------------------ */
   function show(country) {
     lists.forEach((el) =>
       el.classList.toggle(
         "hidden",
-        el.id !== `list-${country.replace(/\\s+/g, "-").toLowerCase()}`
+        el.id !== `list-${country.replace(/\s+/g, "-").toLowerCase()}`
       )
     );
   }
@@ -103,15 +181,14 @@ const {
   function selectDot(dot) {
     if (currentSelected) {
       currentSelected.setAttribute("r", R_DEFAULT);
-      currentSelected.classList.remove("fill-red-600", "ring", "ring-2");
+      currentSelected.classList.remove("fill-cyan-800", "ring", "ring-2");
     }
     currentSelected = dot;
     currentSelected.setAttribute("r", R_SELECTED);
-    currentSelected.classList.add("fill-red-600", "ring", "ring-2");
+    currentSelected.classList.add("fill-cyan-800", "ring", "ring-2");
   }
 
   function highlight(dot) {
-    /* Reset previous hover */
     if (currentHover) {
       if (currentHover === currentSelected) {
         currentHover.setAttribute("r", R_SELECTED);
@@ -120,10 +197,8 @@ const {
         currentHover.classList.remove("ring", "ring-2");
       }
     }
-
     currentHover = dot;
 
-    /* Apply new hover */
     if (currentHover) {
       if (currentHover === currentSelected) {
         currentHover.setAttribute("r", R_SELECTED_HOVER);
@@ -134,9 +209,11 @@ const {
     }
   }
 
-  /* Convert page-px → SVG view-box coords */
+  /* ------------------------------------------------------------------ */
+  /* Utility                                                             */
+  /* ------------------------------------------------------------------ */
   function svgCoords(evt) {
-    const rect = svg.getBoundingClientRect();
+    const rect   = svg.getBoundingClientRect();
     const scaleX = 768 / rect.width;
     const scaleY = 768 / rect.height;
     return {
@@ -145,7 +222,6 @@ const {
     };
   }
 
-  /* Nearest dot (no threshold) */
   function nearestDot(x, y) {
     let nearest = null;
     let minDist = Infinity;
@@ -162,45 +238,91 @@ const {
   }
 
   /* ------------------------------------------------------------------ */
-  /* Event listeners                                                    */
+  /* Auto-cycle logic                                                    */
   /* ------------------------------------------------------------------ */
+  const sortedDots = dots.sort((a, b) =>
+    a.dataset.country.localeCompare(b.dataset.country)
+  );
 
-  /* Mouse-move: always highlight closest */
+  function advanceAutoCycle() {
+    const from = currentSelected;
+    const nextIndex =
+      (sortedDots.indexOf(from) + 1 + sortedDots.length) % sortedDots.length;
+    const to = sortedDots[nextIndex];
+
+    // Fly first…                                                           
+    flyPlane(from, to);
+
+    // …then update selection/visible list just before landing
+    selectTimeout = setTimeout(() => {
+      show(to.dataset.country);
+      selectDot(to);
+    }, PLANE_DURATION);
+  }
+
+  function startAutoCycle() {
+    if (autoInterval) return;          // already running
+    autoInterval = setInterval(advanceAutoCycle, INTERVAL_DELAY);
+  }
+
+  function stopAutoCycle() {
+    clearInterval(autoInterval);
+    autoInterval = null;
+    clearTimeout(selectTimeout);
+    if (animId) cancelAnimationFrame(animId);
+    plane.setAttribute("opacity", 0);
+
+    clearTimeout(restartTimeout);
+    restartTimeout = setTimeout(() => startAutoCycle(), IDLE_RESTART_MS);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Event listeners                                                     */
+  /* ------------------------------------------------------------------ */
   svg.addEventListener("mousemove", (e) => {
     const { x, y } = svgCoords(e);
     highlight(nearestDot(x, y));
   });
 
-  /* Mouse-leave: clear hover state */
   svg.addEventListener("mouseleave", () => highlight(null));
 
-  /* Click anywhere: select closest */
   svg.addEventListener("click", (e) => {
     const { x, y } = svgCoords(e);
     const dot = nearestDot(x, y);
     if (dot) {
       show(dot.dataset.country);
       selectDot(dot);
+      stopAutoCycle();
     }
   });
 
-  /* Direct dot click (touch / keyboard) */
   dots.forEach((d) =>
     d.addEventListener("click", (e) => {
-      e.stopPropagation();   // avoid double-handling
+      e.stopPropagation();
       show(d.dataset.country);
       selectDot(d);
+      stopAutoCycle();
     })
   );
 
-  /* Default selection */
-  if (dots.length) selectDot(dots[0]);
+  /* ------------------------------------------------------------------ */
+  /* Initialise                                                          */
+  /* ------------------------------------------------------------------ */
+  if (dots.length) {
+    selectDot(sortedDots[0]);
+    show(sortedDots[0].dataset.country);
+  }
+  startAutoCycle();
 </script>
 
-<!-- Card sizing & responsive text -->
-<style>
-  .team-card{min-width:10rem;text-align:center;}
-  .team-card h4,.team-card h3{font-size:clamp(0.75rem,2.5vw,1rem);}
-</style>
 
+  <style>
+    .team-card {
+      min-width: 10rem;
+      text-align: center;
+    }
+    .team-card h4 {
+      font-size: clamp(0.75rem, 2.5vw, 1rem);
+    }
+  </style>
 </section>

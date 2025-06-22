@@ -1,91 +1,92 @@
 ---
-import ContactUs from "../components/ContactUs.astro";
-import Headline from "../components/Headline.astro";
-import FrontPage from "../layouts/FrontPage.astro";
-import CollaboratorsMap from "../components/CollaboratorsMap.astro";
-
+import ContactUs from '../components/ContactUs.astro';
+import Headline from '../components/Headline.astro';
+import FrontPage from '../layouts/FrontPage.astro';
+import CollaboratorsMap from '../components/CollaboratorsMap.astro';
 
 /* ────────────────────────────────────────────────────────────
   Editable data – add, remove or reorder freely
   -----------------------------------------------------------*/
 
 const founders = [
-  { name: "Chris Thomas", affiliation: "CERN" },
-  { name: "Connie Potter", affiliation: "CERN" }
+  { name: 'Chris Thomas', affiliation: 'CERN', image: '/images/chris.png' },
+  { name: 'Connie Potter', affiliation: 'CERN', image: '/images/connie.png' }
 ];
 
 const coreProduction = [
-  { name: "Connie Potter" },
-  { name: "Phill Fox", affiliation: "Adaptavist" },
-  { name: "Kaj Siebert" }
+  { name: 'Connie Potter', affiliation: 'CERN', image: '/images/connie.png' },
+  { name: 'Phill Fox', affiliation: 'Adaptavist' },
+  { name: 'Kaj Siebert', affiliation: 'K-Si' }
 ];
 
 const videoPhoto = [
-  { name: "Charlotte Potter-Landua" },
-  { name: "Orlando Prügel-Bennett" },
-  { name: "Claudia Sabeh" },
-  { name: "Maria Fernandez Martinez" }
+  { name: 'Charlotte Potter-Landua' },
+  { name: 'Orlando Prügel-Bennett', affiliation: 'orlandopb.com' },
+  { name: 'Claudia Sabeh' },
+  { name: 'Maria Fernandez Martinez' }
 ];
 
 const collaborators = {
   UK: [
-    { name: "Roger Jones", affiliation: "Lancaster University" },
-    { name: "Alex Cerri", affiliation: "Siena University" },
-    { name: "Dave Wark", affiliation: "Oxford University" },
-    { name: "Dan Hardiker" }
+    { name: 'Roger Jones', affiliation: 'Lancaster University', image: '/people/roger.jpg' },
+    { name: 'Alex Cerri', affiliation: 'Siena University' },
+    { name: 'Dave Wark', affiliation: 'Oxford University' },
+    { name: 'Dan Hardiker' }
   ],
   Denmark: [
-    { name: "Joergen Beck Hansen", affiliation: "Niels Bohr Institut" },
-    { name: "Ulrik Uggerhøj", affiliation: "Aarhus University" },
-    { name: "Lars Varming Joergensen", affiliation: "CERN" }
+    { name: 'Joergen Beck Hansen', affiliation: 'Niels Bohr Institut' },
+    { name: 'Ulrik Uggerhøj', affiliation: 'Aarhus University' },
+    { name: 'Lars Varming Joergensen', affiliation: 'CERN' }
   ],
   Czechia: [
-    { name: "Martin Rybar", affiliation: "Charles University" },
-    { name: "Vojtech Pleskot", affiliation: "Charles University" }
+    { name: 'Martin Rybar', affiliation: 'Charles University' },
+    { name: 'Vojtech Pleskot', affiliation: 'Charles University' }
   ],
   Slovakia: [
-    { name: "Samuel Kovacik", affiliation: "Comenius University" },
-    { name: "Juraj Tekel", affiliation: "Comenius University" },
-    { name: "Robert Astalos", affiliation: "Comenius University" },
-    { name: "Tomas Dado", affiliation: "Comenius University" }
+    { name: 'Samuel Kovacik', affiliation: 'Comenius University' },
+    { name: 'Juraj Tekel', affiliation: 'Comenius University' },
+    { name: 'Robert Astalos', affiliation: 'Comenius University' },
+    { name: 'Tomas Dado', affiliation: 'Comenius University' }
   ],
   Spain: [
-    { name: "Eduardo Saenz de Cabezón", affiliation: "Universidad de La Rioja" },
-    { name: "Cristina Romera Castillo", affiliation: "ICM, CSIC" },
-    { name: "Ivan Lopez", affiliation: "IMB-CNM, CSIC" },
-    { name: "Jesus Puerta Pelayo", affiliation: "CIEMAT" },
-    { name: "José Calabuig Rodriguez", affiliation: "UPV" }
+    { name: 'Eduardo Saenz de Cabezón', affiliation: 'Universidad de La Rioja' },
+    { name: 'Cristina Romera Castillo', affiliation: 'ICM, CSIC' },
+    { name: 'Ivan Lopez', affiliation: 'IMB-CNM, CSIC' },
+    { name: 'Jesus Puerta Pelayo', affiliation: 'CIEMAT' },
+    { name: 'José Calabuig Rodriguez', affiliation: 'UPV' }
   ]
 };
 
 /*  Map affiliation names to URLs so they render as links.                */
 const affiliationLinks = {
-  CERN: "https://home.cern/",
-  Adaptavist: "https://www.adaptavist.com/",
-  "Lancaster University": "https://www.lancaster.ac.uk/",
-  "Siena University": "https://www.unisi.it/",
-  "Oxford University": "https://www.ox.ac.uk/",
-  "Niels Bohr Institut": "https://www.nbi.ku.dk/",
-  "Aarhus University": "https://international.au.dk/",
-  "Charles University": "https://cuni.cz/",
-  "Comenius University": "https://uniba.sk/",
-  "Universidad de La Rioja": "https://www.unirioja.es/",
-  "ICM, CSIC": "https://www.icm.csic.es/",
-  "IMB-CNM, CSIC": "https://www.imb-cnm.csic.es/",
-  CIEMAT: "https://www.ciemat.es/",
-  UPV: "https://www.upv.es/"
+  CERN: 'https://home.cern/',
+  Adaptavist: 'https://www.adaptavist.com/',
+  'Lancaster University': 'https://www.lancaster.ac.uk/',
+  'Siena University': 'https://www.unisi.it/',
+  'Oxford University': 'https://www.ox.ac.uk/',
+  'Niels Bohr Institut': 'https://www.nbi.ku.dk/',
+  'Aarhus University': 'https://international.au.dk/',
+  'Charles University': 'https://cuni.cz/',
+  'Comenius University': 'https://uniba.sk/',
+  'Universidad de La Rioja': 'https://www.unirioja.es/',
+  'ICM, CSIC': 'https://www.icm.csic.es/',
+  'IMB-CNM, CSIC': 'https://www.imb-cnm.csic.es/',
+  CIEMAT: 'https://www.ciemat.es/',
+  UPV: 'https://www.upv.es/',
+  'orlandopb.com': 'https://orlandopb.com/',
+  'K-Si': 'https://www.k-si.com/'
 };
 
-/*  Play‑colour palette (70 % transparency)                                 */
+/*  Play-colour palette (70 % transparency)                                 */
 const colours = [
-  "bg-red-500/30",
-  "bg-amber-500/30",
-  "bg-lime-400/30",
-  "bg-emerald-400/30",
-  "bg-cyan-400/30",
-  "bg-blue-500/30",
-  "bg-violet-500/30",
-  "bg-fuchsia-500/30"
+  'bg-red-500/30',
+  'bg-amber-500/30',
+  'bg-lime-400/30',
+  'bg-emerald-400/30',
+  'bg-cyan-400/30',
+  'bg-blue-500/30',
+  'bg-violet-500/30',
+  'bg-fuchsia-500/30'
 ];
 
 const pickColour = (idx) => colours[idx % colours.length];
@@ -101,26 +102,39 @@ const coords = {
 ---
 
 <FrontPage>
-  <Headline>About Us</Headline>
+  <!-- INTRO SECTION WITH HANGING IMAGE -->
+  <section class='relative py-24 overflow-hidden'>
+    <!-- hanging photo -->
+    <img src='/images/team1.jpg' alt='Team image 1' class='block absolute top-6 right-6 sm:right-14 md:right-24 w-32 sm:w-44 md:w-56 lg:w-64 xl:w-72 rotate-2 z-10' />
+    <img src='/images/team5.png' alt='Team image 5' class='block absolute left-6 sm:left-10 bottom-6 w-32 sm:w-44 md:w-56 lg:w-64 xl:w-72 -rotate-3 z-10' />
 
-  <!-- Intro copy -->
-  <p class="intro-copy my-12 mx-auto px-4">
-    The Big Bang Collective is a group of scientists, makers and storytellers
-    turning physics into unforgettable experiences. Tap a coloured block or use
-    the map to meet the humans behind the experiments.
-  </p>
+    <div class='max-w-screen-lg mx-auto px-4 space-y-8 text-center relative z-20'>
+      <Headline>The Team</Headline>
+      <p class='intro-copy max-w-prose mx-auto text-lg'>
+        The Big Bang Collective is a group of scientists, makers and storytellers
+        turning physics into unforgettable experiences. Tap a coloured block or use
+        the map to meet the humans behind the experiments.
+      </p>
+    </div>
+  </section>
 
   <!-- Founders ------------------------------------------------>
-  <section class={`full-width-block ${pickColour(0)} py-12`}>
-    <div class="max-w-screen-lg mx-auto px-4 space-y-8">
+  <section class={`relative full-width-block ${pickColour(0)} py-12 overflow-visible`}>
+    <!-- scattered image on the left -->
+    <img src='/images/team3.jpg' alt='Team image 3' class='block absolute left-6 sm:left-10 top-24 w-28 sm:w-40 md:w-52 lg:w-60 xl:w-72 -rotate-2 z-10' />
+
+    <div class='max-w-screen-lg mx-auto px-4 space-y-8 relative z-20'>
       <Headline>Founders</Headline>
-      <ul class="grid justify-center gap-6 sm:grid-cols-2 md:grid-cols-3">
+      <ul class='grid w-fit mx-auto justify-center gap-6 sm:grid-cols-2'>
         {founders.map((p) => (
-          <li class="p-4 rounded font-bungee text-gray-900 bg-white/50">
-            <h3 class="text-lg">{p.name}</h3>
+          <li class='p-4 font-bungee text-gray-900 bg-gray-100/80 text-center relative z-20'>
+            {p.image && (
+              <img src={p.image} alt={`${p.name} headshot`} class='mx-auto mb-2 w-24 h-24 rounded-full object-cover' />
+            )}
+            <h3 class='text-lg'>{p.name}</h3>
             {p.affiliation && (
-              <p class="text-sm opacity-90">
-                <a href={affiliationLinks[p.affiliation] ?? "#"} class="underline">
+              <p class='text-sm opacity-90'>
+                <a href={affiliationLinks[p.affiliation] ?? '#'} class='text-xs opacity-90 no-underline'>
                   {p.affiliation}
                 </a>
               </p>
@@ -131,17 +145,48 @@ const coords = {
     </div>
   </section>
 
-  <!-- Core Production Team ------------------------------------>
-  <section class={`full-width-block ${pickColour(1)} py-12`}>
-    <div class="max-w-screen-lg mx-auto px-4 space-y-8">
+  <!-- Core Production Team WITH SCATTERED IMAGE -->
+  <section class={`relative full-width-block ${pickColour(1)} py-12 overflow-visible`}>
+    <img src='/images/team2.jpg' alt='Team image 2' class='block absolute bottom-6 right-6 sm:right-12 w-32 sm:w-44 md:w-56 lg:w-64 xl:w-72 rotate-3 z-10' />
+
+    <div class='max-w-screen-lg mx-auto px-4 space-y-8 relative z-20'>
       <Headline>Core Production Team</Headline>
-      <ul class="grid justify-center gap-6 sm:grid-cols-2 md:grid-cols-3">
+      <div class='grid justify-center gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 items-stretch'>
         {coreProduction.map((p) => (
-          <li class="p-4 rounded font-bungee text-gray-900 bg-white/50">
-            <h3 class="text-lg">{p.name}</h3>
+          <div class='p-4 font-bungee text-gray-900 bg-gray-100/80 text-center relative z-20'>
+            {p.image && (
+              <img src={p.image} alt={`${p.name} headshot`} class='mx-auto mb-2 w-24 h-24 rounded-full object-cover' />
+            )}
+            <h3 class='text-lg'>{p.name}</h3>
             {p.affiliation && (
-              <p class="text-sm opacity-90">
-                <a href={affiliationLinks[p.affiliation] ?? "#"} class="underline">
+              <p class='text-sm opacity-90'>
+                <a href={affiliationLinks[p.affiliation] ?? '#'} class='text-xs opacity-90 no-underline'>
+                  {p.affiliation}
+                </a>
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Video & Photo Team WITH SINGLE RIGHT IMAGE -->
+  <section class={`relative full-width-block ${pickColour(2)} py-12 overflow-visible`}>
+    <img src='/images/team4.jpg' alt='Team image 4' class='block absolute right-6 sm:right-10 top-1/2 -translate-y-1/2 w-32 sm:w-44 md:w-56 lg:w-64 xl:w-72 rotate-2 z-10' />
+
+    <div class='max-w-screen-lg mx-auto px-4 space-y-8 relative z-20'>
+      <Headline>Video & Photo Team</Headline>
+      <ul class='grid w-fit mx-auto justify-center gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
+        {videoPhoto.map((p) => (
+          <li class='p-4 font-bungee text-gray-900 bg-gray-100/80 text-center relative z-20'>
+            {p.image && (
+              <img src={p.image} alt={`${p.name} headshot`} class='mx-auto mb-2 w-24 h-24 rounded-full object-cover' />
+            )}
+            <h3 class='text-lg'>{p.name}</h3>
+            {p.affiliation && (
+              <p class='text-sm opacity-90'>
+                <a href={affiliationLinks[p.affiliation] ?? '#'} class='text-xs opacity-90 no-underline'>
                   {p.affiliation}
                 </a>
               </p>
@@ -152,30 +197,13 @@ const coords = {
     </div>
   </section>
 
-  <!-- Video & Photo Team ------------------------------------->
-  <section class={`full-width-block ${pickColour(2)} py-12`}>
-    <div class="max-w-screen-lg mx-auto px-4 space-y-8">
-      <Headline>Video & Photo Team</Headline>
-      <ul class="grid justify-center gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {videoPhoto.map((p) => (
-          <li class="p-4 rounded font-bungee text-gray-900 bg-white/50">
-            <h3 class="text-lg">{p.name}</h3>
-            {p.affiliation && (
-              <p class="text-sm opacity-90">
-                <a href={affiliationLinks[p.affiliation] ?? "#"} class="underline">
-                  {p.affiliation}
-                </a>
-              </p>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
-  </section>
+  <!-- COLLABORATORS MAP -------------------------------------->
+  <section class={`relative full-width-block ${pickColour(3)} py-12 overflow-visible`}>
 
     <CollaboratorsMap
-    collaborators={collaborators}
-    coords={coords}
-    affiliationLinks={affiliationLinks}
-/>
+      collaborators={collaborators}
+      coords={coords}
+      affiliationLinks={affiliationLinks}
+    />
+  </section>
 </FrontPage>
