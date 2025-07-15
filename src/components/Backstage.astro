@@ -4,6 +4,7 @@
  * – Bold jump‑to buttons with site palette
  * – Smooth scroll + anchor links
  * – Video max‑height and 9/16 aspect‑ratio kept
+ * - Text justified with last line centered
  */
 export const title = "Backstage Science";
 
@@ -63,7 +64,11 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
         padding-bottom: 0.5rem;
         border-bottom: 2px solid #e0e0e0;
       }
-      p { line-height: 1.6; }
+      p {
+        line-height: 1.6;
+        text-align: justify;
+        text-align-last: center;
+      }
 
       /* intro panel */
       .intro-panel {
@@ -93,8 +98,8 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
       .jump-btn:hover { opacity: 0.85; }
 
       /* your site’s bold colours */
-      .jump-btn.hellfest    { background-color: #681717; } /* olive-green */
-      .jump-btn.montreux    { background-color: #134372; } /* golden-yellow */
+      .jump-btn.hellfest    { background-color: #681717; }
+      .jump-btn.montreux    { background-color: #134372; }
 
       /* video blocks */
       .video-block {
@@ -108,8 +113,8 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
         max-width: 100%;
         margin: auto;
         height: auto;
-        max-height: 400px;    /* shorter cap */
-        aspect-ratio: 9 / 16; /* keep portrait‑ratio */
+        max-height: 400px;
+        aspect-ratio: 9 / 16;
         border-radius: 0.5rem;
         background: #000;
         object-fit: cover;
@@ -131,7 +136,6 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
       <section class="backstage-science">
         <h1>{title}</h1>
 
-        <!-- jump links with bold site colours -->
         <nav class="festival-nav">
           <a href="#linkin-park-colin-dave" class="jump-btn hellfest">
             Hellfest ’25: Colin &amp; Dave
@@ -150,25 +154,32 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
           </a>
         </nav>
 
-        <!-- intro panel -->
         <div class="intro-panel">
           <p>
             The Big Bang Collective have been meeting up with members of some of
-            the coolest bands around at festivals this Summer, talking backstage
-            with musicians about their interest in science and technology,
-            where we are going with A.I. and all things creative and emotional.
+            the coolest bands around at Festivals this Summer, talking
+            backstage with musicians about their interest in science and
+            technology, where are we going with A.I. and all things creative
+            and emotional. This coming together of people from the science and
+            artistic world in an informal, relaxed environment, continues to
+            show how closely science and art are intertwined, right down to
+            the long, stressful, tiring process of producing an album or a
+            science experiment. The similarities are there, but rarely seen
+            because they are often hidden from public view. But the creative
+            and intellectual challenges are strikingly similar.
           </p>
+          <p><strong>We are calling this Backstage Science.</strong></p>
           <p>
-            This coming together … continues to show how closely science and art
-            are intertwined… We’re calling this Backstage Science.
+            First is a series of chats that Big Bang Collective member Eduardo
+            Saenz de Cabezón had backstage at Hellfest 2025.
           </p>
         </div>
 
         <h2 id="linkin-park-colin-dave">HELLFEST 2025</h2>
         <div class="video-block">
           <p>
-            Eduardo’s first connection was with Colin and Dave from Linkin Park,
-            discussing A.I. in music and the creative process:
+            His first connection was with Colin and Dave from Linkin Park, how
+            they see using A.I. in music and the creative process, take a look:
           </p>
           <figure>
             <video
@@ -183,8 +194,10 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
 
         <div class="video-block" id="jim-digby">
           <p>
-            Jim Digby, Linkin Park’s tour director, gives us insights into how
-            science has transformed tour management:
+            Jim Digby, Linkin Park’s long time, highly respected Tour
+            Director, made time for a chat with Eduardo too backstage, giving
+            us some insights into how science has changed the way he carries
+            out key tasks in the tour management process:
           </p>
           <figure>
             <video
@@ -199,8 +212,9 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
 
         <div class="video-block" id="jordan-rudess">
           <p>
-            Jordan Rudess from Dream Theater (now collaborating with M.I.T. on
-            A.I.) shares his vision for the future of music tech:
+            Eduardo went on to have a great chat with Jordan Rudess from Dream
+            Theater, who is already working on a project with a team at
+            M.I.T. in Boston using A.I. Hear the full chat:
           </p>
           <figure>
             <video
@@ -215,8 +229,11 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
 
         <div class="video-block" id="neil-westfall">
           <p>
-            Neil Westfall of A Day To Remember on his CERN tour and science at
-            school:
+            And the final dressing room that Eduardo invaded was that of the
+            very cool Neil Westfall of ADTR. Big Bang Collective member Connie
+            Potter welcomed him and the rest of the band for a CERN tour, and
+            Neil shares his reaction to being at this unique, world famous
+            science facility as well as what he thought of science at school:
           </p>
           <figure>
             <video
@@ -232,8 +249,15 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
         <h2 id="micah-nelson">MONTREUX JAZZ FESTIVAL 2025</h2>
         <div class="video-block">
           <p>
-            Backstage with Neil Young’s crew at Montreux, Micah Nelson aka
-            Particle Kid explains cymatics and his sci‑art fusion:
+            At the Montreux Jazz Festival, Big Bang Collective member Connie
+            Potter spent a few hours backstage at the Neil Young show, chatting
+            with the team and specifically with Micah Nelson, guitarist with
+            the Chrome Hearts. Neil also goes by the name Particle Kid and his
+            fascination with science is clear to see. He even told us about a
+            show he did a few years back incorporating an extraordinary natural
+            process called cymatics. It blew our mind, and we have a feeling
+            we’ll be hearing more from Micah in the future. Watch our chat
+            with Micah Nelson here:
           </p>
           <figure>
             <video
