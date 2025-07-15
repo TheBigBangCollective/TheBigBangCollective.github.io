@@ -1,0 +1,33 @@
+---
+interface NewsItem {
+  title: string;
+  description: string;
+  link: string;
+}
+
+const { items }: { items: NewsItem[] } = Astro.props;
+---
+<section class="w-full bg-yellow-400 text-black py-3">
+  <div class="max-w-screen-xl mx-auto px-4">
+    <div class="flex items-center">
+      <span class="font-black uppercase mr-4 text-lg md:text-2xl">||| NEWS |||</span>
+      <div class="flex-1 overflow-hidden">
+        <marquee behavior="scroll" scrollamount="6" class="whitespace-nowrap">
+          {items.map((item, i) => (
+            <span key={i} class="inline-block mx-6  md:text-2xl">
+              <a
+                href={item.link}
+                class="font-semibold normal-case hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {item.title}:
+                {item.description}
+              </a>
+            </span>
+          ))}
+        </marquee>
+      </div>
+    </div>
+  </div>
+</section>
