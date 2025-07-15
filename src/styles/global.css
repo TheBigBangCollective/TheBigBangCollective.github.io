@@ -16,7 +16,7 @@ body {
     /* header sits below the hero title text, aligned RIGHT */
     @apply fixed top-0 left-0 w-full bg-transparent text-white p-4
            flex items-center justify-end overflow-hidden
-           h-0 z-50 transition duration-300 ease-in-out;
+           h-14 z-50 transition duration-300 ease-in-out;
 }
 
 /* state after scrolling 10 px (added by scroll-header.js) */
@@ -311,3 +311,36 @@ body {
   @apply relative left-1/2 right-1/2 ml-[-50vw] mr-[-50vw] w-screen;
 }
 
+/* Paste these new styles into your main CSS file */
+
+/* ───────────────── NEW MOBILE NAV STYLES ───────────────── */
+.mobile-nav-link {
+    @apply text-3xl font-semibold text-white no-underline transition-transform duration-200;
+}
+
+.mobile-nav-link:hover {
+    @apply scale-105;
+}
+
+/* For hiding text from sight but not from screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+/* ───────────────── END NEW STYLES ───────────────── */
+/* Add these rules to your main stylesheet */
+.header-fixed.menu-is-open {
+  @apply z-[101] bg-transparent shadow-none;
+}
+
+/* This ensures the button's icon is white against the dark menu */
+.header-fixed.menu-is-open button {
+  @apply text-white;
+}

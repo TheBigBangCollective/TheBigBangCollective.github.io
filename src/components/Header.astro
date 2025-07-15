@@ -1,7 +1,9 @@
 ---
 /**
- * Slim header that always shows the page links in a fixed order.
- * The current page is simply highlighted.
+ * Responsive header that shows page links on desktop
+ * and a hamburger menu on mobile.
+ * Breakpoint is 1280px (xl).
+ * Fix: Header is now transparent when menu is open, even on scroll.
  */
 const navPages = [
   { path: '/', label: '2025' },
@@ -14,15 +16,74 @@ const navPages = [
 const currentPath = (Astro.url.pathname.replace(/\/$/, '') || '/');
 ---
 <header class="header-fixed">
-  <nav class="flex items-center space-x-3 sm:space-x-5 pr-4">
+  <div class="header-content-wrapper flex items-center justify-end w-full pr-4">
+    <nav class="hidden xl:flex items-center space-x-3 sm:space-x-5">
+      {navPages.map(page => (
+        <a
+          href={page.path}
+          class:list={['nav-link', { 'nav-link-active': page.path === currentPath }]}
+          aria-current={page.path === currentPath ? 'page' : undefined}
+        >
+          {page.label}
+        </a>
+      ))}
+    </nav>
+
+    <button id="menu-toggle-btn" type="button" class="xl:hidden text-inherit p-2 -mr-2">
+      <span class="material-symbols-outlined icon-menu">menu</span>
+      <span class="material-symbols-outlined icon-close hidden">close</span>
+      <span class="sr-only">Open/Close main menu</span>
+    </button>
+  </div>
+</header>
+
+<div id="mobile-menu" class="fixed inset-0 z-[100] bg-gray-900 bg-opacity-95 backdrop-blur-sm text-white hidden flex-col items-center justify-center">
+  <nav class="flex flex-col items-center justify-center text-center space-y-8">
     {navPages.map(page => (
       <a
         href={page.path}
-        class={`nav-link ${page.path === currentPath ? 'nav-link-active' : ''}`}
+        class:list={['mobile-nav-link', { 'nav-link-active': page.path === currentPath }]}
         aria-current={page.path === currentPath ? 'page' : undefined}
       >
         {page.label}
       </a>
     ))}
   </nav>
-</header>
+</div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const header = document.querySelector('.header-fixed');
+    const toggleBtn = document.getElementById('menu-toggle-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const iconMenu = toggleBtn.querySelector('.icon-menu');
+    const iconClose = toggleBtn.querySelector('.icon-close');
+
+    function toggleMenu() {
+      const isMenuOpen = !mobileMenu.classList.contains('hidden');
+      
+      mobileMenu.classList.toggle('hidden');
+      mobileMenu.classList.toggle('flex');
+      
+      iconMenu.classList.toggle('hidden', !isMenuOpen);
+      iconClose.classList.toggle('hidden', isMenuOpen);
+
+      // This class now controls the header's visibility and style
+      header.classList.toggle('menu-is-open');
+
+      // Prevent the main page from scrolling when menu is open
+      document.body.style.overflow = isMenuOpen ? '' : 'hidden';
+    }
+
+    toggleBtn.addEventListener('click', toggleMenu);
+
+    // Also close menu when a link is clicked
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (!mobileMenu.classList.contains('hidden')) {
+            toggleMenu();
+        }
+      });
+    });
+  });
+</script>

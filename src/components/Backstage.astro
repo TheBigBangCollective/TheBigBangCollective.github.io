@@ -3,7 +3,6 @@
 
 export const title = "Backstage Science";
 
-// A map to hold video data for easy reference in the template
 const videos = {
   colinDave: {
     title: "Colin & Dave – Linkin Park (Hellfest 2025)",
@@ -86,7 +85,7 @@ const videos = {
       aspect-ratio: 9 / 16;
       border-radius: 0.5rem;
       background: #000;
-      object-fit: cover; /* letterbox if aspect is slightly off */
+      object-fit: cover;
       display: block;
     }
 
@@ -99,7 +98,6 @@ const videos = {
       color: #333;
     }
 
-    /* Helper for direct linking */
     .video-block:target {
         scroll-margin-top: 2rem;
     }
