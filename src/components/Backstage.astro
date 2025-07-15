@@ -1,0 +1,186 @@
+---
+// Backstage Science page – Updated July 15, 2025
+
+export const title = "Backstage Science";
+
+// A map to hold video data for easy reference in the template
+const videos = {
+  colinDave: {
+    title: "Colin & Dave – Linkin Park (Hellfest 2025)",
+    src: "https://thebigbangcollective.s3.eu-west-2.amazonaws.com/Linkin+Park+x+Hellfest+2025.mp4",
+  },
+  jimDigby: {
+    title: "Jim Digby – Linkin Park Tour Director (Hellfest 2025)",
+    src: "https://thebigbangcollective.s3.eu-west-2.amazonaws.com/Jim+Digby+x+Hellfest+2025.mp4",
+  },
+  jordanRudess: {
+    title: "Jordan Rudess – Dream Theater (Hellfest 2025)",
+    src: "https://thebigbangcollective.s3.eu-west-2.amazonaws.com/Dream+Theater+-+Hellfest+2025.mp4",
+  },
+  neilWestfall: {
+    title: "Neil Westfall – A Day To Remember (Hellfest 2025)",
+    src: "https://thebigbangcollective.s3.eu-west-2.amazonaws.com/ADTR_HellFest+2025.mp4",
+  },
+  micahNelson: {
+    title: "Micah Nelson – Particle Kid (Montreux Jazz 2025)",
+    src: "https://thebigbangcollective.s3.eu-west-2.amazonaws.com/Micah+Nelson+x+Montreux+Jazz+Festival+2025.mp4",
+  },
+};
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>{title} | The Big Bang Collective</title>
+  
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: #fff;
+    }
+
+    .backstage-science {
+      color: #1a1a1a;
+      max-width: 75ch;
+      margin-inline: auto;
+      padding: 2rem 1rem 4rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+    }
+    
+    h2 {
+      font-size: 1.8rem;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    
+    p {
+        line-height: 1.6;
+    }
+
+    /* Contains the introductory text and the video figure */
+    .video-block {
+      margin-top: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .video-block p {
+      margin-bottom: 1rem;
+    }
+
+    .video-block figure {
+      margin: 1rem auto 0; /* Center the figure */
+      max-width: 420px; /* A good max-width for a single portrait video */
+    }
+
+    .video-block video {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 9 / 16;
+      border-radius: 0.5rem;
+      background: #000;
+      object-fit: cover; /* letterbox if aspect is slightly off */
+      display: block;
+    }
+
+    .video-block figcaption {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      line-height: 1.3;
+      text-align: center;
+      color: #333;
+    }
+
+    /* Helper for direct linking */
+    .video-block:target {
+        scroll-margin-top: 2rem;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <section class="backstage-science">
+      <h1>{title} 🤘</h1>
+
+      <p>
+        The Big Bang Collective have been meeting up with members of some of the coolest bands around at festivals this Summer,
+        talking backstage with musicians about their interest in science and technology, where we are going with A.I. and all things creative
+        and emotional. This coming together of people from the science and artistic world in an informal, relaxed environment, continues to show
+        how closely science and art are intertwined, right down to the long, stressful, tiring process of producing an album or a science experiment.
+        The similarities are there, but rarely seen because they are often hidden from public view. But the creative and intellectual challenges are strikingly similar.
+      </p>
+      <p>We are calling this Backstage Science.</p>
+
+      <h2>HELLFEST 2025</h2>
+      <p>
+        First is a series of chats that Big Bang Collective member Eduardo Saenz de Cabezón had backstage at Hellfest 2025.
+      </p>
+      
+      <div class="video-block" id="linkin-park-colin-dave">
+        <p>
+          His first connection was with Colin and Dave from Linkin Park, how they see using A.I. in music and the creative process. Take a look:
+        </p>
+        <figure>
+          <video controls src={`${videos.colinDave.src}#t=0.1`} title={videos.colinDave.title} preload="metadata"></video>
+          <figcaption>{videos.colinDave.title}</figcaption>
+        </figure>
+      </div>
+
+      <div class="video-block" id="jim-digby">
+        <p>
+          Jim Digby, Linkin Park’s long time, highly respected Tour Director, made time for a chat with Eduardo too backstage, giving us some insights into how science has changed the way he carries out key tasks in the tour management process:
+        </p>
+        <figure>
+          <video controls src={`${videos.jimDigby.src}#t=0.1`} title={videos.jimDigby.title} preload="metadata"></video>
+          <figcaption>{videos.jimDigby.title}</figcaption>
+        </figure>
+      </div>
+      
+      <div class="video-block" id="jordan-rudess">
+        <p>
+          Eduardo went on to have a great chat with Jordan Rudess from Dream Theater, who is already working on a project with a team at M.I.T. in Boston using A.I. Hear the full chat:
+        </p>
+        <figure>
+          <video controls src={`${videos.jordanRudess.src}#t=0.1`} title={videos.jordanRudess.title} preload="metadata"></video>
+          <figcaption>{videos.jordanRudess.title}</figcaption>
+        </figure>
+      </div>
+
+      <div class="video-block" id="neil-westfall">
+        <p>
+          And the final dressing room that Eduardo invaded was that of the very cool Neil Westfall of ADTR. Big Bang Collective member Connie Potter welcomed him and the rest of the band for a CERN tour, and Neil shares his reaction to being at this unique, world famous science facility as well as what he thought of science at school:
+        </p>
+        <figure>
+          <video controls src={`${videos.neilWestfall.src}#t=0.1`} title={videos.neilWestfall.title} preload="metadata"></video>
+          <figcaption>{videos.neilWestfall.title}</figcaption>
+        </figure>
+      </div>
+
+      <h2>Montreux Jazz Festival 2025</h2>
+
+      <div class="video-block" id="micah-nelson">
+        <p>
+          At the Montreux Jazz Festival, Big Bang Collective member Connie Potter spent a few hours backstage at the Neil Young show, chatting with the team and specifically with Micah Nelson, guitarist with the band. Micah also goes by the name Particle Kid and his fascination with science is clear to see. He even told us about a show he did a few years back incorporating an extraordinary natural process called cymatics. It blew our mind, and we have a feeling we’ll be hearing more from Micah in the future.
+        </p>
+        <p>
+            Watch our chat with Micah Nelson here:
+        </p>
+        <figure>
+          <video controls src={`${videos.micahNelson.src}#t=0.1`} title={videos.micahNelson.title} preload="metadata"></video>
+          <figcaption>{videos.micahNelson.title}</figcaption>
+        </figure>
+      </div>
+
+    </section>
+  </main>
+</body>
+</html>
