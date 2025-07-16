@@ -1,6 +1,6 @@
 ---
 /**
- * Backstage Science page – Updated July 15, 2025
+ * Backstage Science page – Updated July 16, 2025
  * – Bold jump‑to buttons with site palette
  * – Smooth scroll + anchor links
  * – Video max‑height and 9/16 aspect‑ratio kept
@@ -52,9 +52,9 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
 
       .backstage-science {
         color: #1a1a1a;
-        max-width: 75ch;
+        max-width: 1200px;
         margin: 0 auto;
-        padding: 2rem 1rem 4rem;
+        padding: 2rem 1.5rem 4rem;
       }
 
       h1 { font-size: 2.5rem; text-align: center; padding-bottom: 30px;}
@@ -63,6 +63,16 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
         margin: 3rem 0 1rem;
         padding-bottom: 0.5rem;
         border-bottom: 2px solid #e0e0e0;
+      }
+      h3.video-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-top: 0;
+        margin-bottom: 1rem;
+        color: #333;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e0e0e0;
+        text-align: left;
       }
       p {
         line-height: 1.6;
@@ -76,6 +86,9 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
         border-left: 4px solid #ccc;
         padding: 1.5rem;
         margin-bottom: 3rem;
+        max-width: 80ch;
+        margin-left: auto;
+        margin-right: auto;
       }
 
       /* jump menu & buttons */
@@ -105,29 +118,54 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
       .video-block {
         margin: 2rem 0 3rem;
       }
+      .video-block p {
+          margin-top: 0;
+      }
       .video-block figure {
         margin: 1rem auto 0;
         max-width: 420px;
       }
       .video-block video {
-        max-width: 100%;
+        max-width: 70%; 
         margin: auto;
         height: auto;
-        max-height: 400px;
         aspect-ratio: 9 / 16;
         border-radius: 0.5rem;
         background: #000;
-        object-fit: cover;
+        object-fit: contain; /* ✅ CHANGED FROM 'cover' TO 'contain' */
         display: block;
       }
-      .video-block figcaption {
-        margin-top: 0.5rem;
-        font-size: 0.9rem;
-        font-weight: 500;
-        text-align: center;
-        color: #333;
-      }
       .video-block:target { scroll-margin-top: 2rem; }
+
+      /* Responsive layout for wider screens */
+      @media (min-width: 900px) {
+        .video-block {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+            margin: 5rem 0;
+        }
+
+        .video-description {
+            flex: 1 1 50%;
+            min-width: 0;
+        }
+
+        .video-description p {
+            text-align: justify;
+            text-align-last: left;
+        }
+        
+        .video-block figure {
+            flex: 1 1 60%;
+            max-width: none;
+            margin: 0;
+        }
+
+        .video-block video {
+            width: 60%;
+        }
+      }
       
     </style>
   </head>
@@ -177,10 +215,13 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
 
         <h2 id="linkin-park-colin-dave">HELLFEST 2025</h2>
         <div class="video-block">
-          <p>
-            His first connection was with Colin and Dave from Linkin Park, how
-            they see using A.I. in music and the creative process, take a look:
-          </p>
+          <div class="video-description">
+            <h3 class="video-title">{videos.colinDave.title}</h3>
+            <p>
+              His first connection was with Colin and Dave from Linkin Park, how
+              they see using A.I. in music and the creative process, take a look:
+            </p>
+          </div>
           <figure>
             <video
               controls
@@ -188,17 +229,19 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
               title={videos.colinDave.title}
               preload="metadata"
             />
-            <figcaption>{videos.colinDave.title}</figcaption>
           </figure>
         </div>
 
         <div class="video-block" id="jim-digby">
-          <p>
-            Jim Digby, Linkin Park’s long time, highly respected Tour
-            Director, made time for a chat with Eduardo too backstage, giving
-            us some insights into how science has changed the way he carries
-            out key tasks in the tour management process:
-          </p>
+          <div class="video-description">
+            <h3 class="video-title">{videos.jimDigby.title}</h3>
+            <p>
+              Jim Digby, Linkin Park’s long time, highly respected Tour
+              Director, made time for a chat with Eduardo too backstage, giving
+              us some insights into how science has changed the way he carries
+              out key tasks in the tour management process:
+            </p>
+          </div>
           <figure>
             <video
               controls
@@ -206,16 +249,18 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
               title={videos.jimDigby.title}
               preload="metadata"
             />
-            <figcaption>{videos.jimDigby.title}</figcaption>
           </figure>
         </div>
 
         <div class="video-block" id="jordan-rudess">
-          <p>
-            Eduardo went on to have a great chat with Jordan Rudess from Dream
-            Theater, who is already working on a project with a team at
-            M.I.T. in Boston using A.I. Hear the full chat:
-          </p>
+          <div class="video-description">
+            <h3 class="video-title">{videos.jordanRudess.title}</h3>
+            <p>
+              Eduardo went on to have a great chat with Jordan Rudess from Dream
+              Theater, who is already working on a project with a team at
+              M.I.T. in Boston using A.I. Hear the full chat:
+            </p>
+          </div>
           <figure>
             <video
               controls
@@ -223,18 +268,20 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
               title={videos.jordanRudess.title}
               preload="metadata"
             />
-            <figcaption>{videos.jordanRudess.title}</figcaption>
           </figure>
         </div>
 
         <div class="video-block" id="neil-westfall">
-          <p>
-            And the final dressing room that Eduardo invaded was that of the
-            very cool Neil Westfall of ADTR. Big Bang Collective member Connie
-            Potter welcomed him and the rest of the band for a CERN tour, and
-            Neil shares his reaction to being at this unique, world famous
-            science facility as well as what he thought of science at school:
-          </p>
+          <div class="video-description">
+            <h3 class="video-title">{videos.neilWestfall.title}</h3>
+            <p>
+              And the final dressing room that Eduardo invaded was that of the
+              very cool Neil Westfall of ADTR. Big Bang Collective member Connie
+              Potter welcomed him and the rest of the band for a CERN tour, and
+              Neil shares his reaction to being at this unique, world famous
+              science facility as well as what he thought of science at school:
+            </p>
+          </div>
           <figure>
             <video
               controls
@@ -242,23 +289,26 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
               title={videos.neilWestfall.title}
               preload="metadata"
             />
-            <figcaption>{videos.neilWestfall.title}</figcaption>
           </figure>
         </div>
 
         <h2 id="micah-nelson">MONTREUX JAZZ FESTIVAL 2025</h2>
         <div class="video-block">
-          <p>
-            At the Montreux Jazz Festival, Big Bang Collective member Connie
-            Potter spent a few hours backstage at the Neil Young show, chatting
-            with the team and specifically with Micah Nelson, guitarist with
-            the Chrome Hearts. Neil also goes by the name Particle Kid and his
-            fascination with science is clear to see. He even told us about a
-            show he did a few years back incorporating an extraordinary natural
-            process called cymatics. It blew our mind, and we have a feeling
-            we’ll be hearing more from Micah in the future. Watch our chat
-            with Micah Nelson here:
-          </p>
+          <div class="video-description">
+            <h3 class="video-title">{videos.micahNelson.title}</h3>
+            <p>
+              At the Montreux Jazz Festival, Big Bang Collective member Connie
+              Potter spent a few hours backstage at the Neil Young show, chatting
+              with the team and specifically with Micah Nelson, guitarist with
+              the Chrome Hearts. Neil also goes by the name Particle Kid and his
+              fascination with science is clear to see. He even told us about a
+
+              show he did a few years back incorporating an extraordinary natural
+              process called cymatics. It blew our mind, and we have a feeling
+              we’ll be hearing more from Micah in the future. Watch our chat
+              with Micah Nelson here:
+            </p>
+          </div>
           <figure>
             <video
               controls
@@ -266,7 +316,6 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
               title={videos.micahNelson.title}
               preload="metadata"
             />
-            <figcaption>{videos.micahNelson.title}</figcaption>
           </figure>
         </div>
       </section>
