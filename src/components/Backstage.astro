@@ -1,6 +1,7 @@
 ---
 /**
- * Backstage Science page – Updated July 16, 2025
+ * Backstage Science page – Updated July 20, 2025
+ * – NEW: Release toggles for "Coming Soon" videos
  * – Bold jump‑to buttons with site palette
  * – Smooth scroll + anchor links
  * – Video max‑height and 9/16 aspect‑ratio kept
@@ -8,29 +9,70 @@
  */
 export const title = "Backstage Science";
 
-const videos = {
-  colinDave: {
+// --- VIDEO RELEASE TOGGLES ---
+// Set a video to `true` to make it public.
+// Or, set `releaseAll` to `true` to publish everything.
+const releaseToggles = {
+  releaseAll: false, // Master switch
+  colinDave: true,   // Published
+  jimDigby: true,    // Published
+  jordanRudess: false, // Coming Soon
+  neilWestfall: false, // Coming Soon
+  micahNelson: false,  // Coming Soon
+};
+
+// --- VIDEO DATA ---
+// All video information is now in this single array.
+const videos = [
+  {
+    id: "linkin-park-colin-dave",
+    festival: "Hellfest",
+    artist: "Colin & Dave",
     title: "Colin & Dave – Linkin Park (Hellfest 2025)",
     src: "https://thebigbangcollective.s3.eu-west-2.amazonaws.com/Linkin+Park+x+Hellfest+2025.mp4",
+    description: "His first connection was with Colin and Dave from Linkin Park, how they see using A.I. in music and the creative process, take a look:",
+    released: releaseToggles.releaseAll || releaseToggles.colinDave,
   },
-  jimDigby: {
+  {
+    id: "jim-digby",
+    festival: "Hellfest",
+    artist: "Jim Digby",
     title: "Jim Digby – Linkin Park Tour Director (Hellfest 2025)",
     src: "https://thebigbangcollective.s3.eu-west-2.amazonaws.com/Jim+Digby+x+Hellfest+2025.mp4",
+    description: "Jim Digby, Linkin Park’s long time, highly respected Tour Director, made time for a chat with Eduardo too backstage, giving us some insights into how science has changed the way he carries out key tasks in the tour management process:",
+    released: releaseToggles.releaseAll || releaseToggles.jimDigby,
   },
-  jordanRudess: {
+  {
+    id: "jordan-rudess",
+    festival: "Hellfest",
+    artist: "Jordan Rudess",
     title: "Jordan Rudess – Dream Theater (Hellfest 2025)",
     src: "https://thebigbangcollective.s3.eu-west-2.amazonaws.com/Dream+Theater+-+Hellfest+2025.mp4",
+    description: "Eduardo went on to have a great chat with Jordan Rudess from Dream Theater, who is already working on a project with a team at M.I.T. in Boston using A.I. Hear the full chat:",
+    released: releaseToggles.releaseAll || releaseToggles.jordanRudess,
   },
-  neilWestfall: {
+  {
+    id: "neil-westfall",
+    festival: "Hellfest",
+    artist: "Neil Westfall",
     title: "Neil Westfall – A Day To Remember (Hellfest 2025)",
     src: "https://thebigbangcollective.s3.eu-west-2.amazonaws.com/ADTR_HellFest+2025.mp4",
+    description: "And the final dressing room that Eduardo invaded was that of the very cool Neil Westfall of ADTR. Big Bang Collective member Connie Potter welcomed him and the rest of the band for a CERN tour, and Neil shares his reaction to being at this unique, world famous science facility as well as what he thought of science at school:",
+    released: releaseToggles.releaseAll || releaseToggles.neilWestfall,
   },
-  micahNelson: {
+  {
+    id: "micah-nelson",
+    festival: "Montreux",
+    artist: "Micah Nelson",
     title: "Micah Nelson – Particle Kid (Montreux Jazz 2025)",
     src: "https://thebigbangcollective.s3.eu-west-2.amazonaws.com/Micah+Nelson+x+Montreux+Jazz+Festival+2025.mp4",
+    description: "At the Montreux Jazz Festival, Big Bang Collective member Connie Potter spent a few hours backstage at the Neil Young show, chatting with the team and specifically with Micah Nelson, guitarist with the Chrome Hearts. Neil also goes by the name Particle Kid and his fascination with science is clear to see. He even told us about a show he did a few years back incorporating an extraordinary natural process called cymatics. It blew our mind, and we have a feeling we’ll be hearing more from Micah in the future. Watch our chat with Micah Nelson here:",
+    released: releaseToggles.releaseAll || releaseToggles.micahNelson,
   },
-};
-const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
+];
+
+const hellfestVideos = videos.filter(v => v.festival === 'Hellfest');
+const montreuxVideos = videos.filter(v => v.festival === 'Montreux');
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -109,10 +151,21 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
         transition: opacity 0.2s;
       }
       .jump-btn:hover { opacity: 0.85; }
+      
+      /* Style for unreleased video links */
+      .jump-btn.coming-soon {
+        background-color: #9ca3af; /* gray-400 */
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+      .jump-btn.coming-soon:hover {
+        opacity: 0.7;
+      }
+
 
       /* your site’s bold colours */
-      .jump-btn.hellfest    { background-color: #681717; }
-      .jump-btn.montreux    { background-color: #134372; }
+      .jump-btn.hellfest { background-color: #681717; }
+      .jump-btn.montreux { background-color: #134372; }
 
       /* video blocks */
       .video-block {
@@ -126,20 +179,41 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
         max-width: 420px;
       }
       .video-block video {
-        max-width: 70%; 
+        max-width: 100%; /* Changed for better responsive behavior */
         margin: auto;
         height: auto;
         aspect-ratio: 9 / 16;
         border-radius: 0.5rem;
         background: #000;
-        object-fit: contain; /* ✅ CHANGED FROM 'cover' TO 'contain' */
+        object-fit: contain;
         display: block;
       }
       .video-block:target { scroll-margin-top: 2rem; }
 
+      /* "Coming Soon" placeholder styles */
+      .coming-soon-block {
+        background-color: #f9fafb; /* gray-50 */
+        border: 2px dashed #e5e7eb; /* gray-200 */
+        border-radius: 0.5rem;
+        padding: 2rem;
+        text-align: center;
+        margin: 2rem 0 3rem;
+      }
+      .coming-soon-block h3 {
+        color: #4b5563; /* gray-600 */
+        font-size: 1.25rem;
+      }
+      .coming-soon-block p {
+        color: #6b7281; /* gray-500 */
+        text-align: center;
+        text-align-last: center;
+      }
+      .coming-soon-block:target { scroll-margin-top: 2rem; }
+
+
       /* Responsive layout for wider screens */
       @media (min-width: 900px) {
-        .video-block {
+        .video-block, .coming-soon-block-wrapper {
             display: flex;
             align-items: center;
             gap: 3rem;
@@ -156,14 +230,10 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
             text-align-last: left;
         }
         
-        .video-block figure {
-            flex: 1 1 60%;
+        .video-block figure, .coming-soon-block {
+            flex: 1 1 50%; /* Adjusted from 60% for balance */
             max-width: none;
             margin: 0;
-        }
-
-        .video-block video {
-            width: 60%;
         }
       }
       
@@ -175,21 +245,20 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
         <h1>{title}</h1>
 
         <nav class="festival-nav">
-          <a href="#linkin-park-colin-dave" class="jump-btn hellfest">
-            Hellfest ’25: Colin &amp; Dave
-          </a>
-          <a href="#jim-digby" class="jump-btn hellfest">
-            Hellfest: Jim Digby
-          </a>
-          <a href="#jordan-rudess" class="jump-btn hellfest">
-            Hellfest: Jordan Rudess
-          </a>
-          <a href="#neil-westfall" class="jump-btn hellfest">
-            Hellfest: Neil Westfall
-          </a>
-          <a href="#micah-nelson" class="jump-btn montreux">
-            Montreux Jazz ’25
-          </a>
+          {videos.map(video => (
+            <a 
+              href={video.released ? `#${video.id}` : '#'}
+              class:list={[
+                "jump-btn",
+                video.festival.toLowerCase(),
+                { "coming-soon": !video.released }
+              ]}
+              onclick={!video.released ? "event.preventDefault();" : ""}
+              title={!video.released ? "Coming Soon!" : ""}
+            >
+              {video.festival === 'Hellfest' ? `Hellfest: ${video.artist}` : 'Montreux Jazz ’25'}
+            </a>
+          ))}
         </nav>
 
         <div class="intro-panel">
@@ -204,6 +273,7 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
             the long, stressful, tiring process of producing an album or a
             science experiment. The similarities are there, but rarely seen
             because they are often hidden from public view. But the creative
+
             and intellectual challenges are strikingly similar.
           </p>
           <p><strong>We are calling this Backstage Science.</strong></p>
@@ -213,111 +283,70 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, "") || "/");
           </p>
         </div>
 
-        <h2 id="linkin-park-colin-dave">HELLFEST 2025</h2>
-        <div class="video-block">
-          <div class="video-description">
-            <h3 class="video-title">{videos.colinDave.title}</h3>
-            <p>
-              His first connection was with Colin and Dave from Linkin Park, how
-              they see using A.I. in music and the creative process, take a look:
-            </p>
-          </div>
-          <figure>
-            <video
-              controls
-              src={`${videos.colinDave.src}#t=0.1`}
-              title={videos.colinDave.title}
-              preload="metadata"
-            />
-          </figure>
-        </div>
+        <!-- HELLFEST 2025 SECTION -->
+        <h2 id="hellfest-2025">HELLFEST 2025</h2>
+        {hellfestVideos.map(video => (
+          video.released ? (
+            <div class="video-block" id={video.id}>
+              <div class="video-description">
+                <h3 class="video-title">{video.title}</h3>
+                <p>{video.description}</p>
+              </div>
+              <figure>
+                <video
+                  controls
+                  src={`${video.src}#t=0.1`}
+                  title={video.title}
+                  preload="metadata"
+                />
+              </figure>
+            </div>
+          ) : (
+            <div class="coming-soon-block-wrapper" id={video.id}>
+                <div class="video-description">
+                    <h3 class="video-title">{video.title}</h3>
+                    <p>{video.description}</p>
+                </div>
+                <div class="coming-soon-block">
+                    <h3>Coming Soon!</h3>
+                    <p>Check back soon for this exclusive chat.</p>
+                </div>
+            </div>
+          )
+        ))}
 
-        <div class="video-block" id="jim-digby">
-          <div class="video-description">
-            <h3 class="video-title">{videos.jimDigby.title}</h3>
-            <p>
-              Jim Digby, Linkin Park’s long time, highly respected Tour
-              Director, made time for a chat with Eduardo too backstage, giving
-              us some insights into how science has changed the way he carries
-              out key tasks in the tour management process:
-            </p>
-          </div>
-          <figure>
-            <video
-              controls
-              src={`${videos.jimDigby.src}#t=0.1`}
-              title={videos.jimDigby.title}
-              preload="metadata"
-            />
-          </figure>
-        </div>
 
-        <div class="video-block" id="jordan-rudess">
-          <div class="video-description">
-            <h3 class="video-title">{videos.jordanRudess.title}</h3>
-            <p>
-              Eduardo went on to have a great chat with Jordan Rudess from Dream
-              Theater, who is already working on a project with a team at
-              M.I.T. in Boston using A.I. Hear the full chat:
-            </p>
-          </div>
-          <figure>
-            <video
-              controls
-              src={`${videos.jordanRudess.src}#t=0.1`}
-              title={videos.jordanRudess.title}
-              preload="metadata"
-            />
-          </figure>
-        </div>
-
-        <div class="video-block" id="neil-westfall">
-          <div class="video-description">
-            <h3 class="video-title">{videos.neilWestfall.title}</h3>
-            <p>
-              And the final dressing room that Eduardo invaded was that of the
-              very cool Neil Westfall of ADTR. Big Bang Collective member Connie
-              Potter welcomed him and the rest of the band for a CERN tour, and
-              Neil shares his reaction to being at this unique, world famous
-              science facility as well as what he thought of science at school:
-            </p>
-          </div>
-          <figure>
-            <video
-              controls
-              src={`${videos.neilWestfall.src}#t=0.1`}
-              title={videos.neilWestfall.title}
-              preload="metadata"
-            />
-          </figure>
-        </div>
-
-        <h2 id="micah-nelson">MONTREUX JAZZ FESTIVAL 2025</h2>
-        <div class="video-block">
-          <div class="video-description">
-            <h3 class="video-title">{videos.micahNelson.title}</h3>
-            <p>
-              At the Montreux Jazz Festival, Big Bang Collective member Connie
-              Potter spent a few hours backstage at the Neil Young show, chatting
-              with the team and specifically with Micah Nelson, guitarist with
-              the Chrome Hearts. Neil also goes by the name Particle Kid and his
-              fascination with science is clear to see. He even told us about a
-
-              show he did a few years back incorporating an extraordinary natural
-              process called cymatics. It blew our mind, and we have a feeling
-              we’ll be hearing more from Micah in the future. Watch our chat
-              with Micah Nelson here:
-            </p>
-          </div>
-          <figure>
-            <video
-              controls
-              src={`${videos.micahNelson.src}#t=0.1`}
-              title={videos.micahNelson.title}
-              preload="metadata"
-            />
-          </figure>
-        </div>
+        <!-- MONTREUX JAZZ FESTIVAL 2025 SECTION -->
+        <h2 id="montreux-2025">MONTREUX JAZZ FESTIVAL 2025</h2>
+        {montreuxVideos.map(video => (
+          video.released ? (
+            <div class="video-block" id={video.id}>
+              <div class="video-description">
+                <h3 class="video-title">{video.title}</h3>
+                <p>{video.description}</p>
+              </div>
+              <figure>
+                <video
+                  controls
+                  src={`${video.src}#t=0.1`}
+                  title={video.title}
+                  preload="metadata"
+                />
+              </figure>
+            </div>
+          ) : (
+             <div class="coming-soon-block-wrapper" id={video.id}>
+                <div class="video-description">
+                    <h3 class="video-title">{video.title}</h3>
+                    <p>{video.description}</p>
+                </div>
+                <div class="coming-soon-block">
+                    <h3>Coming Soon!</h3>
+                    <p>Check back soon for this exclusive chat.</p>
+                </div>
+            </div>
+          )
+        ))}
       </section>
     </main>
   </body>
