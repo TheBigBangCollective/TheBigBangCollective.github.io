@@ -31,7 +31,7 @@ function slugify(str: string) {
     .toLowerCase()
     .replace(/[^\w\s-]/g, '')
     .trim()
-    .replace(/\s+/g, '-');   
+    .replace(/\s+/g, '-');
 }
 
 /* sort chronologically (oldest first) */
@@ -85,8 +85,9 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
                        w-full h-[150px]                      /* mobile: strip */
                        sm:w-[30%] sm:self-stretch sm:h-auto /* desktop: 200px×card-height */
                        rounded-md overflow-hidden
-                       sm:overflow-y-auto"                
+                       sm:overflow-y-auto"
                 data-festival-index={festivalIdx}
+                style={`--card-bg: ${bg};`}
               >
                 <div
                   class="flex flex-row sm:flex-col
@@ -107,7 +108,7 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
       data-title={title}
       data-index={i}
       class="flex-none rounded-md cursor-pointer
-             h-full w-auto object-contain     
+             h-full w-auto object-contain
              sm:w-full sm:h-auto sm:object-cover"
     />
 
@@ -131,7 +132,6 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
             )}
 
             {/* main text / video – shifts right only when gallery exists */}
-{/* main text / video – shifts right only when gallery exists */}
 <div class={`timeline-text flex-1 min-h-0 ${f.images?.length ? 'sm:pl-1' : ''}`}>
   <p class="text-justify whitespace-pre-line">{f.description}</p>
 
@@ -174,10 +174,6 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
   })}
 </ul>
 
-<!-- ──────────────────────────────────────────────────────────────────── -->
-<!--                       LIGHTBOX / MODAL VIEW                        -->
-<!-- ──────────────────────────────────────────────────────────────────── -->
-<!-- This entire block should go right AFTER the </ul> above.          -->
 <div
   id="lightbox"
   class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center p-4"
@@ -191,7 +187,6 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
     &times;
   </button>
 
-  <!-- Left arrow -->
   <button
     id="lightbox-prev"
     class="absolute left-4 top-1/2 transform -translate-y-1/2
@@ -201,7 +196,6 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
     <span class="text-white text-3xl">&#10094;</span>
   </button>
 
-  <!-- Right arrow -->
   <button
     id="lightbox-next"
     class="absolute right-4 top-1/2 transform -translate-y-1/2
@@ -227,9 +221,6 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
   ></div>
 </div>
 
-<!-- ──────────────────────────────────────────────────────────────────── -->
-<!--                         LIGHTBOX JavaScript                         -->
-<!-- ──────────────────────────────────────────────────────────────────── -->
 <script type="module">
   // Keep track of the currently open gallery & image index
   let currentGalleryImages = [];
@@ -260,6 +251,7 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
 
   // Update the displayed image, caption, and arrow visibility
   function updateLightbox() {
+    if (!currentGalleryImages[currentIndex]) return;
     const { src, title } = currentGalleryImages[currentIndex];
     lbImg.src = src;
     lbImg.alt = title || '';
@@ -329,6 +321,35 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
 </script>
 
 <script>
+  // ---- START: SCROLL INDICATOR LOGIC ----
+  function updateScrollIndicators(gallery) {
+    if (!gallery) return;
+    const scrollContainer = gallery.querySelector('div'); // The inner scrollable div
+
+    // Check horizontal scrollability (mobile view)
+    // A 1px tolerance helps avoid floating point rounding issues
+    const hasHorizontalOverflow = scrollContainer.scrollWidth > scrollContainer.clientWidth + 1;
+    if (hasHorizontalOverflow) {
+      gallery.classList.add('is-scrollable-x');
+      const isAtEnd = scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 1;
+      gallery.classList.toggle('is-scrolled-to-end-x', isAtEnd);
+    } else {
+      gallery.classList.remove('is-scrollable-x', 'is-scrolled-to-end-x');
+    }
+
+    // Check vertical scrollability (desktop view)
+    const hasVerticalOverflow = scrollContainer.scrollHeight > scrollContainer.clientHeight + 1;
+    if (hasVerticalOverflow) {
+      gallery.classList.add('is-scrollable-y');
+      const isAtEnd = scrollContainer.scrollTop + scrollContainer.clientHeight >= scrollContainer.scrollHeight - 1;
+      gallery.classList.toggle('is-scrolled-to-end-y', isAtEnd);
+    } else {
+      gallery.classList.remove('is-scrollable-y', 'is-scrolled-to-end-y');
+    }
+  }
+  // ---- END: SCROLL INDICATOR LOGIC ----
+
+
   // Compute “text+video” height as before
   function computeTextVideoHeight(textPara, videoIframe) {
     const paraHeight = textPara.getBoundingClientRect().height;
@@ -368,12 +389,22 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
 
     // Ensure the gallery is visible (desktop baseline is already 100px via CSS)
     gallery.classList.add('clamped');
+
+    // ** NEW: Update scroll indicators after clamping **
+    updateScrollIndicators(gallery);
   }
 
   window.addEventListener('load', () => {
     document.querySelectorAll('.timeline-item').forEach(item => {
+      const gallery = item.querySelector('.gallery');
+
       // Initial clamp once everything has loaded
       clampSingleGallery(item);
+
+      // ** NEW: Add scroll listener for indicators **
+      if (gallery) {
+        gallery.querySelector('div').addEventListener('scroll', () => updateScrollIndicators(gallery), { passive: true });
+      }
 
       // Watch the paragraph for any reflows (e.g. webfonts)
       const textPara = item.querySelector('.timeline-text p');
@@ -387,3 +418,57 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
   });
 
 </script>
+
+<style>
+  .gallery {
+    position: relative;
+  }
+
+  /* The pseudo-element that creates the gradient overlay */
+  .gallery::after {
+    content: '';
+    position: absolute;
+    z-index: 10;
+    pointer-events: none; /* Allows clicking/scrolling through it */
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  /* --- Mobile (Horizontal Scroll) Indicator --- */
+  .gallery.is-scrollable-x::after {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 40px;
+    background: linear-gradient(to left, var(--card-bg), transparent);
+    opacity: 1; /* Show when scrollable */
+  }
+
+  /* Hide when scrolled all the way to the end */
+  .gallery.is-scrollable-x.is-scrolled-to-end-x::after {
+    opacity: 0;
+  }
+
+
+  /* --- Desktop (Vertical Scroll) Indicator --- */
+  @media (min-width: 640px) { /* Tailwind's 'sm' breakpoint */
+    .gallery.is-scrollable-y::after {
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: linear-gradient(to top, var(--card-bg), transparent);
+      opacity: 1; /* Show when scrollable */
+    }
+
+    /* Hide when scrolled all the way to the bottom */
+    .gallery.is-scrollable-y.is-scrolled-to-end-y::after {
+      opacity: 0;
+    }
+
+    /* Hide horizontal indicator on desktop view */
+    .gallery.is-scrollable-x::after {
+        opacity: 0;
+    }
+  }
+</style>
