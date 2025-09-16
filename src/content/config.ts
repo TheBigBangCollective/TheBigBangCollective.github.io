@@ -33,6 +33,7 @@ const yearsCollection = defineCollection({
         start:       z.date(),
         end:         z.date(),
         logo:        z.string().optional(),
+        sponsor:        z.string().optional(),
         images:      z.array(galleryItem).optional(),
         video:       z.string().url().optional(),
         video_ratio: z.string().regex(/^\d+\/\d+$/).optional(),
