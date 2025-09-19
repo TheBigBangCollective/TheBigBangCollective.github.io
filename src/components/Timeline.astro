@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro:assets'; // Added for TypeScript support
 
 interface Festival {
   name: string;
@@ -17,13 +18,18 @@ interface Festival {
 }
 const { festivals }:{ festivals: Festival[] } = Astro.props;
 
+// ✅ FIX: Use import.meta.glob to load all possible sponsor logos at build time.
+// This allows Astro to process them and generate correct production paths.
+const sponsorLogos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/sponsors/*.{jpeg,jpg,png,gif,webp,svg}', { eager: true });
+
+
 /* helper: convert "CZ" → "🇨🇿" (not currently used) */
 function isoToFlagEmoji(countryCode: string) {
   return countryCode
     .toUpperCase()
     .split('')
     .map(char => 0x1f1e6 + (char.charCodeAt(0) - 65))
-    .map(cp => String.fromCodeCodePoint(cp))
+    .map(cp => String.fromCodePoint(cp)) // Note: Corrected from fromCodeCodePoint
     .join('');
 }
 
@@ -45,6 +51,9 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
     const bg   = f.bg   || '#f3f4f6';
     const text = f.text || 'inherit';
 
+    // ✅ FIX: Look up the pre-imported sponsor image module using the path as a key.
+    const sponsorImagePath = f.sponsor ? `/src/assets/${f.sponsor}` : null;
+    const sponsorImageModule = sponsorImagePath ? sponsorLogos[sponsorImagePath] : null;
 
     return (
       <li id={slugify(f.name)} class="timeline-item">
@@ -61,7 +70,7 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
             <Image
               src={`/src/assets/${f.logo}`}
               alt={`${f.name} logo`}
-              width={56}      // 14 × 4 (Tailwind’s w-14, h-14 are 3.5rem = 56px)
+              width={56}
               height={56}
               loading="lazy"
               class="object-contain shrink-0"
@@ -136,11 +145,11 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
 <div class={`timeline-text flex-1 min-h-0 ${f.images?.length ? 'sm:pl-1' : ''}`}>
   <p class="text-justify whitespace-pre-line">{f.description}</p>
   
-  {/* Add the sponsor logo here */}
-  {f.sponsor && (
+  {/* ✅ FIX: Use the imported module for the src prop. Check that it exists. */}
+  {sponsorImageModule && (
     <div class="mt-4 border-t border-dashed border-gray-400 pt-4 flex justify-center">
       <Image
-        src={`/src/assets/${f.sponsor}`}
+        src={sponsorImageModule.default}
         alt={`${f.name} sponsor logo`}
         width={150}
         height={100}
