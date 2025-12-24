@@ -17,7 +17,7 @@ const festivalCollection = defineCollection({
 /* -------- reusable gallery item -------- */
 const galleryItem = z.object({
   src:   z.string(),            // e.g. photos/ostrava-dj.jpg
-  title: z.string(),            // shown on hover
+  title: z.string().optional(),            // shown on hover
   desc:  z.string().optional()  // future use / captions
 });
 

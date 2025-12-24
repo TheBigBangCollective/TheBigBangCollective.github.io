@@ -1,13 +1,13 @@
 ---
 import { Image } from 'astro:assets';
-import type { ImageMetadata } from 'astro:assets'; // Added for TypeScript support
+import type { ImageMetadata } from 'astro:assets';
 
 interface Festival {
   name: string;
   start: string;
   end:   string;
   logo?:  string;
-  images?: { src: string; title: string; desc?: string }[];
+  images?: { src: string; title?: string; desc?: string }[];
   video?:  string;
   link?: { url: string; text: string };
   bg?:     string;
@@ -16,67 +16,81 @@ interface Festival {
   country:   string;
   sponsor?: string;
 }
+
 const { festivals }:{ festivals: Festival[] } = Astro.props;
 
-// ✅ FIX: Use import.meta.glob to load all possible sponsor logos at build time.
-// This allows Astro to process them and generate correct production paths.
+// 1. Load ALL images in src/assets
+const allImages = import.meta.glob<{ default: ImageMetadata }>('/src/assets/**/*.{jpeg,jpg,png,gif,webp}', { eager: true });
 const sponsorLogos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/sponsors/*.{jpeg,jpg,png,gif,webp,svg}', { eager: true });
 
-
-/* helper: convert "CZ" → "🇨🇿" (not currently used) */
-function isoToFlagEmoji(countryCode: string) {
-  return countryCode
-    .toUpperCase()
-    .split('')
-    .map(char => 0x1f1e6 + (char.charCodeAt(0) - 65))
-    .map(cp => String.fromCodePoint(cp)) // Note: Corrected from fromCodeCodePoint
-    .join('');
-}
-
 function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-');
+  return str.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
 }
 
-/* sort chronologically (oldest first) */
+function formatTitleFromFilename(path: string) {
+  const fileName = path.split('/').pop()?.split('.')[0] || '';
+  return fileName.replace(/_/g, ' '); 
+}
+
+/* sort chronologically */
 festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf());
 ---
-
 
 <ul class="timeline-wrapper">
   {festivals.map((f, festivalIdx) => {
     const bg   = f.bg   || '#f3f4f6';
     const text = f.text || 'inherit';
 
-    // ✅ FIX: Look up the pre-imported sponsor image module using the path as a key.
     const sponsorImagePath = f.sponsor ? `/src/assets/${f.sponsor}` : null;
     const sponsorImageModule = sponsorImagePath ? sponsorLogos[sponsorImagePath] : null;
 
+    // ───────── IMAGE LOGIC ─────────
+    const galleryItems: { type: 'astro' | 'standard', src: any, title: string }[] = [];
+
+    if (f.images) {
+      f.images.forEach((entry) => {
+        const cleanPath = '/' + entry.src.replace(/^(\.\.\/)+/, '').replace(/^\//, '');
+        const matchingKeys = Object.keys(allImages).filter(key => key.startsWith(cleanPath));
+
+        if (matchingKeys.length > 0) {
+          matchingKeys.sort().forEach(key => {
+            const isSingleFile = (key === cleanPath);
+            const autoTitle = formatTitleFromFilename(key);
+            const finalTitle = (isSingleFile && entry.title) ? entry.title : autoTitle;
+
+            galleryItems.push({
+              type: 'astro',
+              src: allImages[key].default,
+              title: finalTitle
+            });
+          });
+        } else {
+          galleryItems.push({
+            type: 'standard',
+            src: entry.src,
+            title: entry.title || ''
+          });
+        }
+      });
+    }
+
     return (
       <li id={slugify(f.name)} class="timeline-item">
-      <span class="timeline-connector"></span>
-      <span class="timeline-branch-circle"></span>
+        <span class="timeline-connector"></span>
+        <span class="timeline-branch-circle"></span>
 
-        <div
-          class="timeline-card"
-          style={`background-color:${bg}; color:${text}`}
-        >
-          {/* ───────── HEADER : logo + title + dates ───────── */}
+        <div class="timeline-card" style={`background-color:${bg}; color:${text}`}>
+          
+          {/* HEADER */}
           <div class="flex items-center gap-4 mb-2">
-          {f.logo && (
-            <Image
-              src={`/src/assets/${f.logo}`}
-              alt={`${f.name} logo`}
-              width={56}
-              height={56}
-              loading="lazy"
-              class="object-contain shrink-0"
-            />
-          )}
-
+            {f.logo && (
+               <Image
+                 src={`/src/assets/${f.logo}`}
+                 alt={`${f.name} logo`}
+                 width={56} height={56}
+                 class="object-contain shrink-0"
+               />
+            )}
             <div>
               <h3 class="text-lg font-semibold leading-tight">{f.name}</h3>
               <p class="text-sm opacity-80">
@@ -87,110 +101,96 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
             </div>
           </div>
 
-          {/* ───────── BODY : gallery (optional) + description/video ───────── */}
+          {/* BODY */}
           <div class="flex flex-col sm:flex-row gap-4">
-            {f.images?.length && (
+            
+            {/* GALLERY */}
+            {galleryItems.length > 0 && (
               <div
-                class="gallery flex-shrink-0
-                       w-full h-[150px]                      /* mobile: strip */
-                       sm:w-[30%] sm:self-stretch sm:h-auto /* desktop: 200px×card-height */
-                       rounded-md overflow-hidden
-                       sm:overflow-y-auto"
+                class="gallery flex-shrink-0 w-full h-[150px] sm:w-[30%] sm:self-stretch sm:h-auto rounded-md overflow-hidden sm:overflow-y-auto"
                 data-festival-index={festivalIdx}
                 style={`--card-bg: ${bg};`}
               >
-                <div
-                  class="flex flex-row sm:flex-col
-                         gap-2 p-1
-                         h-full w-full
-                         overflow-x-auto sm:overflow-x-hidden sm:overflow-y-auto
-                         snap-x sm:snap-y snap-mandatory"
-                >
-{f.images.map(({ src, title }, i) => (
-  <div
-    key={i}
-    class="relative flex-none h-full w-auto sm:w-full sm:h-auto snap-center group"
-  >
-    {/* ─────── the image itself ─────── */}
-    <img
-      src={`/src/assets/${src}`}
-      alt={title || `${f.name} image ${i + 1}`}
-      data-title={title}
-      data-index={i}
-      class="flex-none rounded-md cursor-pointer
-             h-full w-auto object-contain
-             sm:w-full sm:h-auto sm:object-cover"
-    />
+                <div class="flex flex-row sm:flex-col gap-2 p-1 h-full w-full overflow-x-auto sm:overflow-x-hidden sm:overflow-y-auto snap-x sm:snap-y snap-mandatory">
+                  
+                  {galleryItems.map((item, i) => {
+                    // Calculate the FULL resolution path to store in data attribute
+                    // If it's an Astro image object, .src gives the original URL. If standard, it's just the string.
+                    const fullResSrc = item.type === 'astro' ? item.src.src : item.src;
 
-    {/* ─────── hover‐title overlay ─────── */}
-    <div
-      class="absolute inset-0
-             bg-black bg-opacity-50
-             opacity-0 group-hover:opacity-100
-             transition-opacity
-             flex items-center justify-center
-             rounded-md
-             pointer-events-none"
-    >
-      <span class="text-white text-sm px-2 text-center">{title}</span>
-    </div>
-  </div>
-))}
-
+                    return (
+                    <div key={i} class="relative flex-none h-full w-auto sm:w-full sm:h-auto snap-center group">
+                      {item.type === 'astro' ? (
+                        <Image
+                          src={item.src}
+                          alt={item.title}
+                          width={600}
+                          densities={[1.5, 2]}
+                          class="flex-none rounded-md cursor-pointer h-full w-auto object-contain sm:w-full sm:h-auto sm:object-cover"
+                          data-title={item.title}
+                          data-index={i}
+                          data-full-src={fullResSrc} 
+                        />
+                      ) : (
+                        <img
+                          src={item.src} 
+                          alt={item.title}
+                          class="flex-none rounded-md cursor-pointer h-full w-auto object-contain sm:w-full sm:h-auto sm:object-cover"
+                          data-title={item.title}
+                          data-index={i}
+                          data-full-src={fullResSrc}
+                          loading="lazy"
+                        />
+                      )}
+                      <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-md pointer-events-none">
+                        <span class="text-white text-sm px-2 text-center">{item.title}</span>
+                      </div>
+                    </div>
+                  )})}
                 </div>
               </div>
             )}
 
-            {/* main text / video – shifts right only when gallery exists */}
-<div class={`timeline-text flex-1 min-h-0 ${f.images?.length ? 'sm:pl-1' : ''}`}>
-  <p class="text-justify whitespace-pre-line">{f.description}</p>
-  
-  {/* ✅ FIX: Use the imported module for the src prop. Check that it exists. */}
-  {sponsorImageModule && (
-    <div class="mt-4 border-t border-dashed border-gray-400 pt-4 flex justify-center">
-      <Image
-        src={sponsorImageModule.default}
-        alt={`${f.name} sponsor logo`}
-        width={150}
-        height={100}
-        loading="lazy"
-        class="object-contain"
-      />
-    </div>
-  )}
+            {/* TEXT / VIDEO */}
+            <div class={`timeline-text flex-1 min-h-0 ${galleryItems.length ? 'sm:pl-1' : ''}`}>
+              <p class="text-justify whitespace-pre-line">{f.description}</p>
+              
+              {sponsorImageModule && (
+                <div class="mt-4 border-t border-dashed border-gray-400 pt-4 flex justify-center">
+                  <Image
+                    src={sponsorImageModule.default}
+                    alt={`${f.name} sponsor logo`}
+                    width={150} height={100}
+                    class="object-contain"
+                  />
+                </div>
+              )}
 
-  {/* optional video */}
-  {f.video && (
-    <div class="mt-4">
-      <iframe
-        src={f.video}
-        loading="lazy"
-        class="w-full aspect-video rounded-md"
-        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen
-      />
-    </div>
-  )}
+              {f.video && (
+                <div class="mt-4">
+                  <iframe
+                    src={f.video}
+                    title={`Video coverage of ${f.name}`}
+                    loading="lazy"
+                    class="w-full aspect-video rounded-md"
+                    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                  />
+                </div>
+              )}
 
-  {/* optional link */}
-  {f.link && (
-    <div class="mt-4 text-center">
-      <a
-        href={f.link.url}
-        class="inline-flex items-center gap-2
-               text-lg font-bold
-               text-gray-500 hover:text-gray-600
-               underline-offset-4 hover:underline"
-      >
-        {f.link.text}
-        {/* subtle arrow icon */}
-        <span aria-hidden="true" class="text-xl">↗︎</span>
-      </a>
-    </div>
-  )}
-
-</div>
-
+              {f.link && (
+                <div class="mt-4 text-center">
+                  <a
+                    href={f.link.url}
+                    class="inline-flex items-center gap-2 text-lg font-bold text-gray-500 hover:text-gray-600 underline-offset-4 hover:underline"
+                  >
+                    {f.link.text}
+                    <span aria-hidden="true" class="text-xl">↗︎</span>
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </li>
@@ -198,67 +198,26 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
   })}
 </ul>
 
-<div
-  id="lightbox"
-  class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center p-4"
->
-  {/* Close “×” button */}
-  <button
-    id="lightbox-close"
-    class="absolute top-4 right-4 text-white text-2xl font-bold focus:outline-none"
-    aria-label="Close"
-  >
-    &times;
-  </button>
-
-  <button
-    id="lightbox-prev"
-    class="absolute left-4 top-1/2 transform -translate-y-1/2
-           p-4 focus:outline-none"
-    aria-label="Previous Image"
-  >
-    <span class="text-white text-3xl">&#10094;</span>
-  </button>
-
-  <button
-    id="lightbox-next"
-    class="absolute right-4 top-1/2 transform -translate-y-1/2
-           p-4 focus:outline-none"
-    aria-label="Next Image"
-  >
-    <span class="text-white text-3xl">&#10095;</span>
-  </button>
-
-
-  {/* The displayed image */}
-  <img
-    id="lightbox-img"
-    src=""
-    alt=""
-    class="max-h-full max-w-full rounded-md shadow-lg object-contain"
-  />
-
-  {/* Caption bar at bottom */}
-  <div
-    id="lightbox-caption"
-    class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded"
-  ></div>
+{/* LIGHTBOX HTML */}
+<div id="lightbox" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center p-4">
+  <button id="lightbox-close" class="absolute top-4 right-4 text-white text-2xl font-bold focus:outline-none" aria-label="Close">&times;</button>
+  <button id="lightbox-prev" class="absolute left-4 top-1/2 transform -translate-y-1/2 p-4 focus:outline-none" aria-label="Previous Image"><span class="text-white text-3xl">&#10094;</span></button>
+  <button id="lightbox-next" class="absolute right-4 top-1/2 transform -translate-y-1/2 p-4 focus:outline-none" aria-label="Next Image"><span class="text-white text-3xl">&#10095;</span></button>
+  <img id="lightbox-img" src="" alt="" class="max-h-full max-w-full rounded-md shadow-lg object-contain" />
+  <div id="lightbox-caption" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded"></div>
 </div>
 
 <script type="module">
-  // Keep track of the currently open gallery & image index
   let currentGalleryImages = [];
   let currentIndex = 0;
 
-  // Grab references to lightbox elements
   const lightbox = document.getElementById('lightbox');
-  const lbImg     = document.getElementById('lightbox-img');
+  const lbImg = document.getElementById('lightbox-img');
   const lbCaption = document.getElementById('lightbox-caption');
-  const btnClose  = document.getElementById('lightbox-close');
-  const btnPrev   = document.getElementById('lightbox-prev');
-  const btnNext   = document.getElementById('lightbox-next');
+  const btnClose = document.getElementById('lightbox-close');
+  const btnPrev = document.getElementById('lightbox-prev');
+  const btnNext = document.getElementById('lightbox-next');
 
-  // Open the lightbox given an array of { src, title } and a start index
   function openLightbox(galleryImgs, index) {
     currentGalleryImages = galleryImgs;
     currentIndex = index;
@@ -267,91 +226,53 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
     document.body.classList.add('overflow-hidden');
   }
 
-  // Close the lightbox
   function closeLightbox() {
     lightbox.classList.add('hidden');
     document.body.classList.remove('overflow-hidden');
   }
 
-  // Update the displayed image, caption, and arrow visibility
   function updateLightbox() {
     if (!currentGalleryImages[currentIndex]) return;
     const { src, title } = currentGalleryImages[currentIndex];
     lbImg.src = src;
     lbImg.alt = title || '';
     lbCaption.textContent = title || '';
-
     btnPrev.style.display = currentIndex > 0 ? 'block' : 'none';
     btnNext.style.display = currentIndex < currentGalleryImages.length - 1 ? 'block' : 'none';
   }
 
-  // Delegate clicks on any <img> inside .gallery
   document.addEventListener('click', (e) => {
     const clickedImg = e.target.closest('.gallery img');
     if (!clickedImg) return;
-
-    // Build an array of { src, title } for all thumbnails in the same gallery
+    
     const galleryContainer = clickedImg.closest('.gallery');
+    
+    // UPDATED LOGIC: Get the high-res URL from data-full-src, fallback to src if missing
     const imgs = Array.from(galleryContainer.querySelectorAll('img')).map((el) => ({
-      src: el.src,
+      src: el.dataset.fullSrc || el.src, 
       title: el.dataset.title || ''
     }));
 
-    // Determine which index in that array was clicked
-    const idx = parseInt(clickedImg.dataset.index, 10);
-
-    openLightbox(imgs, idx);
+    openLightbox(imgs, parseInt(clickedImg.dataset.index, 10));
   });
 
-  // Close when “×” is clicked
   btnClose.addEventListener('click', closeLightbox);
-
-  // Prev arrow click
-  btnPrev.addEventListener('click', () => {
-    if (currentIndex > 0) {
-      currentIndex--;
-      updateLightbox();
-    }
-  });
-
-  // Next arrow click
-  btnNext.addEventListener('click', () => {
-    if (currentIndex < currentGalleryImages.length - 1) {
-      currentIndex++;
-      updateLightbox();
-    }
-  });
-
-  // Clicking outside the image (on the dark backdrop) closes
-  lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) {
-      closeLightbox();
-    }
-  });
-
-  // Keyboard navigation: Esc to close, arrows to navigate
+  btnPrev.addEventListener('click', () => { if (currentIndex > 0) { currentIndex--; updateLightbox(); } });
+  btnNext.addEventListener('click', () => { if (currentIndex < currentGalleryImages.length - 1) { currentIndex++; updateLightbox(); } });
+  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
   document.addEventListener('keydown', (e) => {
     if (lightbox.classList.contains('hidden')) return;
-    if (e.key === 'Escape') {
-      closeLightbox();
-    } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
-      currentIndex--;
-      updateLightbox();
-    } else if (e.key === 'ArrowRight' && currentIndex < currentGalleryImages.length - 1) {
-      currentIndex++;
-      updateLightbox();
-    }
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft' && currentIndex > 0) { currentIndex--; updateLightbox(); }
+    else if (e.key === 'ArrowRight' && currentIndex < currentGalleryImages.length - 1) { currentIndex++; updateLightbox(); }
   });
 </script>
 
 <script>
-  // ---- START: SCROLL INDICATOR LOGIC ----
+  // SCROLL & CLAMPING LOGIC
   function updateScrollIndicators(gallery) {
     if (!gallery) return;
-    const scrollContainer = gallery.querySelector('div'); // The inner scrollable div
-
-    // Check horizontal scrollability (mobile view)
-    // A 1px tolerance helps avoid floating point rounding issues
+    const scrollContainer = gallery.querySelector('div'); 
     const hasHorizontalOverflow = scrollContainer.scrollWidth > scrollContainer.clientWidth + 1;
     if (hasHorizontalOverflow) {
       gallery.classList.add('is-scrollable-x');
@@ -361,7 +282,6 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
       gallery.classList.remove('is-scrollable-x', 'is-scrolled-to-end-x');
     }
 
-    // Check vertical scrollability (desktop view)
     const hasVerticalOverflow = scrollContainer.scrollHeight > scrollContainer.clientHeight + 1;
     if (hasVerticalOverflow) {
       gallery.classList.add('is-scrollable-y');
@@ -371,16 +291,13 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
       gallery.classList.remove('is-scrollable-y', 'is-scrolled-to-end-y');
     }
   }
-  // ---- END: SCROLL INDICATOR LOGIC ----
 
-
-  // Compute “text+video” height as before
   function computeTextVideoHeight(textPara, videoIframe) {
     const paraHeight = textPara.getBoundingClientRect().height;
     if (!videoIframe) return paraHeight;
     const videoWidth  = videoIframe.offsetWidth;
     const videoHeight = (videoWidth * 9) / 16;
-    return paraHeight + 16 + videoHeight; // plus 16px margin‐top
+    return paraHeight + 16 + videoHeight;
   }
 
   function clampSingleGallery(item) {
@@ -388,111 +305,55 @@ festivals.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf
     const videoIframe = item.querySelector('.timeline-text iframe');
     const gallery     = item.querySelector('.gallery');
     if (!textPara || !gallery) return;
-
     const imgs = gallery.querySelectorAll('img');
 
     if (imgs.length === 1 && !videoIframe) {
-      // Case A: single image, no video → show it at full height
       gallery.style.maxHeight = 'none';
       const fullHeight = gallery.scrollHeight;
       gallery.style.maxHeight = `${fullHeight}px`;
     }
     else if (videoIframe) {
-      // Case B: video present (regardless of how many images) → text+video formula
       const needed = computeTextVideoHeight(textPara, videoIframe);
       const minHeight = gallery.offsetWidth * 0.67;
       gallery.style.maxHeight = `${Math.max(needed, minHeight)}px`;
-
     }
     else {
-      // Case C: multiple images, no video → clamp to match text‐column height
       const textHeight = textPara.getBoundingClientRect().height;
       const minHeight = gallery.offsetWidth * 0.67;
       gallery.style.maxHeight = `${Math.max(textHeight, minHeight)}px`;
     }
-
-    // Ensure the gallery is visible (desktop baseline is already 100px via CSS)
     gallery.classList.add('clamped');
-
-    // ** NEW: Update scroll indicators after clamping **
     updateScrollIndicators(gallery);
   }
 
   window.addEventListener('load', () => {
     document.querySelectorAll('.timeline-item').forEach(item => {
       const gallery = item.querySelector('.gallery');
-
-      // Initial clamp once everything has loaded
       clampSingleGallery(item);
-
-      // ** NEW: Add scroll listener for indicators **
       if (gallery) {
         gallery.querySelector('div').addEventListener('scroll', () => updateScrollIndicators(gallery), { passive: true });
       }
-
-      // Watch the paragraph for any reflows (e.g. webfonts)
       const textPara = item.querySelector('.timeline-text p');
-      if (textPara) {
-        new ResizeObserver(() => clampSingleGallery(item)).observe(textPara);
-      }
-
-      // On window resize (video or text wrapping changes), re‐clamp
+      if (textPara) new ResizeObserver(() => clampSingleGallery(item)).observe(textPara);
       window.addEventListener('resize', () => clampSingleGallery(item));
     });
   });
-
 </script>
 
 <style>
-  .gallery {
-    position: relative;
-  }
-
-  /* The pseudo-element that creates the gradient overlay */
+  .gallery { position: relative; }
   .gallery::after {
-    content: '';
-    position: absolute;
-    z-index: 10;
-    pointer-events: none; /* Allows clicking/scrolling through it */
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
+    content: ''; position: absolute; z-index: 10; pointer-events: none; opacity: 0; transition: opacity 0.2s ease-in-out;
   }
-
-  /* --- Mobile (Horizontal Scroll) Indicator --- */
   .gallery.is-scrollable-x::after {
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 40px;
-    background: linear-gradient(to left, var(--card-bg), transparent);
-    opacity: 1; /* Show when scrollable */
+    top: 0; right: 0; bottom: 0; width: 40px; background: linear-gradient(to left, var(--card-bg), transparent); opacity: 1;
   }
-
-  /* Hide when scrolled all the way to the end */
-  .gallery.is-scrollable-x.is-scrolled-to-end-x::after {
-    opacity: 0;
-  }
-
-
-  /* --- Desktop (Vertical Scroll) Indicator --- */
-  @media (min-width: 640px) { /* Tailwind's 'sm' breakpoint */
+  .gallery.is-scrollable-x.is-scrolled-to-end-x::after { opacity: 0; }
+  @media (min-width: 640px) {
     .gallery.is-scrollable-y::after {
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 40px;
-      background: linear-gradient(to top, var(--card-bg), transparent);
-      opacity: 1; /* Show when scrollable */
+      bottom: 0; left: 0; right: 0; height: 40px; background: linear-gradient(to top, var(--card-bg), transparent); opacity: 1;
     }
-
-    /* Hide when scrolled all the way to the bottom */
-    .gallery.is-scrollable-y.is-scrolled-to-end-y::after {
-      opacity: 0;
-    }
-
-    /* Hide horizontal indicator on desktop view */
-    .gallery.is-scrollable-x::after {
-        opacity: 0;
-    }
+    .gallery.is-scrollable-y.is-scrolled-to-end-y::after { opacity: 0; }
+    .gallery.is-scrollable-x::after { opacity: 0; }
   }
 </style>
