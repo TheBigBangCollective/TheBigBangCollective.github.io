@@ -16,9 +16,10 @@ const releaseToggles = {
   releaseAll: false, // Master switch
   colinDave: true,   // Published
   jimDigby: true,    // Published
-  jordanRudess: true, 
-  neilWestfall: true, // Coming Soon
-  micahNelson: true,  // Coming Soon
+  jordanRudess: true,
+  neilWestfall: true,
+  micahNelson: true,
+  qotsaPaleo: true,
 };
 
 // --- VIDEO DATA ---
@@ -69,10 +70,26 @@ const videos = [
     description: "At the Montreux Jazz Festival, Big Bang Collective member Connie Potter spent a few hours backstage at the Neil Young show, chatting with the team and specifically with Micah Nelson, guitarist with the Chrome Hearts. Neil also goes by the name Particle Kid and his fascination with science is clear to see. He even told us about a show he did a few years back incorporating an extraordinary natural process called cymatics. It blew our mind, and we have a feeling we’ll be hearing more from Micah in the future. Watch our chat with Micah Nelson here:",
     released: releaseToggles.releaseAll || releaseToggles.micahNelson,
   },
+  {
+    id: "qotsa-paleo",
+    festival: "Paleo",
+    artist: "Queens of the Stone Age",
+    title: "Queens of the Stone Age (Paleo Festival 2025)",
+    src: "https://thebigbangcollective.s3.eu-west-2.amazonaws.com/QOTSA_CERN.mp4",
+    description: "Queens of the Stone Age visited CERN for a tour with Connie Potter. Take a look:",
+    released: releaseToggles.releaseAll || releaseToggles.qotsaPaleo,
+  },
 ];
+
+const festivalLabels: Record<string, string> = {
+  Hellfest: 'Hellfest',
+  Montreux: "Montreux Jazz '25",
+  Paleo: 'Paleo Festival',
+};
 
 const hellfestVideos = videos.filter(v => v.festival === 'Hellfest');
 const montreuxVideos = videos.filter(v => v.festival === 'Montreux');
+const paleoVideos = videos.filter(v => v.festival === 'Paleo');
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -166,6 +183,7 @@ const montreuxVideos = videos.filter(v => v.festival === 'Montreux');
       /* your site’s bold colours */
       .jump-btn.hellfest { background-color: #681717; }
       .jump-btn.montreux { background-color: #134372; }
+      .jump-btn.paleo    { background-color: #1a6e35; }
 
       /* video blocks */
       .video-block {
@@ -256,7 +274,7 @@ const montreuxVideos = videos.filter(v => v.festival === 'Montreux');
               onclick={!video.released ? "event.preventDefault();" : ""}
               title={!video.released ? "Coming Soon!" : ""}
             >
-              {video.festival === 'Hellfest' ? `Hellfest: ${video.artist}` : 'Montreux Jazz ’25'}
+              {`${festivalLabels[video.festival]}: ${video.artist}`}
             </a>
           ))}
         </nav>
@@ -344,6 +362,38 @@ const montreuxVideos = videos.filter(v => v.festival === 'Montreux');
                     <h3>Coming Soon!</h3>
                     <p>Check back soon for this exclusive chat.</p>
                 </div>
+            </div>
+          )
+        ))}
+
+        <!-- PALEO FESTIVAL 2025 SECTION -->
+        <h2 id="paleo-2025">PALEO FESTIVAL 2025</h2>
+        {paleoVideos.map(video => (
+          video.released ? (
+            <div class="video-block" id={video.id}>
+              <div class="video-description">
+                <h3 class="video-title">{video.title}</h3>
+                <p>{video.description}</p>
+              </div>
+              <figure>
+                <video
+                  controls
+                  src={`${video.src}#t=0.1`}
+                  title={video.title}
+                  preload="metadata"
+                />
+              </figure>
+            </div>
+          ) : (
+            <div class="coming-soon-block-wrapper" id={video.id}>
+              <div class="video-description">
+                <h3 class="video-title">{video.title}</h3>
+                <p>{video.description}</p>
+              </div>
+              <div class="coming-soon-block">
+                <h3>Coming Soon!</h3>
+                <p>Check back soon for this exclusive chat.</p>
+              </div>
             </div>
           )
         ))}
