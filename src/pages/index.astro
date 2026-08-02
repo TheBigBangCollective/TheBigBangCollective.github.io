@@ -1,38 +1,33 @@
 ---
-import FrontPage  from "../layouts/FrontPage.astro";
-import Headline   from "../components/Headline.astro";
-import NewsSection from "../components/news.astro";
-import Timeline   from "../components/Timeline.astro";
+import FrontPage    from "../layouts/FrontPage.astro";
+import Headline     from "../components/Headline.astro";
+import Timeline     from "../components/Timeline.astro";
+import BannerImages from "../components/BannerImages.astro";
 import { getEntryBySlug } from "astro:content";
 
-/* get the 2025 markdown entry */
-const { data } = await getEntryBySlug('years', '2025');
+import quantumCorral    from "../assets/images/2026/luck/Quantum_Corral.jpeg";
+import solderingWorkshop from "../assets/images/2026/luck/Soldering_Workshop.jpeg";
+
+/* get the 2026 markdown entry */
+const { data } = await getEntryBySlug('years', '2026');
 ---
 
 <FrontPage>
-    <NewsSection items={[
-     {
-       title: "BACKSTAGE SCIENCE",
-       description: "Big Bang Collective have been sneaking backstage to talk to some amazing artists in a series called Backstage Science. Check it out here.",
-       link: "/backstage"
-     },
-     {
-       title: "FESTIVAL NEWS: OSTRAVA PROGRAMMES",
-       description: "The programmes are now out for nearly all of our 2025 Science Pavilions! For Ostrava, find both the indoor and outdoor programme here.",
-       link: "https://www.colours.cz/en/program/?program-category=427&program-stage%5B%5D=6556&program-stage%5B%5D=6555&program-day=2025-07-18&program-layout=timeline"
-     }
-  ]} />
-  <div class="text-gray-800 p-8 pt-2 pb-0">
+  <BannerImages
+    slot="banner"
+    images={[
+      { src: quantumCorral,    alt: "The Quantum Corral tent at LUCK Reunion" },
+      { src: solderingWorkshop, alt: "A soldering workshop inside the Quantum Corral" }
+    ]}
+  />
+
+  <div class="text-gray-800 p-8 pt-2">
     <Headline>{data.title}</Headline>
-  </div>
 
-
-
-  <div class="text-gray-800 p-8 pt-8">
       <p class="intro-copy">
         {data.intro}
       </p>
-  </div>
+    </div>
 
   <Timeline festivals={data.festivals} />
 </FrontPage>

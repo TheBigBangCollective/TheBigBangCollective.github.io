@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(cp /Users/orlando/Downloads/cbafa49e-3f01-4dd1-8cda-4fa8540f2b58.jpeg src/assets/images/2026/luck/Quantum_Corral.jpeg)",
+      "Bash(cp /Users/orlando/Downloads/9115aaf4-17e8-4655-85a5-297557837b8e.jpeg src/assets/images/2026/luck/Soldering_Workshop.jpeg)",
+      "WebSearch",
+      "Bash(python3 -)"
+    ]
+  }
+}

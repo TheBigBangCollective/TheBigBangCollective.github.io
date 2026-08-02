@@ -30,8 +30,12 @@ const yearsCollection = defineCollection({
     festivals: z.array(
       z.object({
         name:        z.string(),
-        start:       z.date(),
-        end:         z.date(),
+        /* Dates are optional so an upcoming year can list confirmed
+           festivals before their dates are announced. */
+        start:       z.date().optional(),
+        end:         z.date().optional(),
+        /* Shown in place of the dates while they are still unconfirmed */
+        dates_note:  z.string().optional(),
         logo:        z.string().optional(),
         sponsor:        z.string().optional(),
         images:      z.array(galleryItem).optional(),
@@ -41,7 +45,7 @@ const yearsCollection = defineCollection({
           .object({url:  z.string(),text: z.string()}).optional(),
         bg:          z.string().optional(),
         text:        z.string().optional(),
-        description: z.string(),
+        description: z.string().optional(),
         country:     z.string().optional(),
       })
     )
