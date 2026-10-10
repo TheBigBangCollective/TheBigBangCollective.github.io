@@ -1,0 +1,142 @@
+---
+/**
+ * Opens the shared photo/film viewer (src/util/lightbox.js) for galleries.
+ * Any <img> inside an element with `data-lightbox-group` opens it, as does an
+ * element marked `data-lightbox-open` (it opens the img inside or beside it).
+ * On the img: `data-full-src` is the large version, `data-title` the caption,
+ * and `data-video` (+ optional `data-hls`, `data-portrait`) makes the item a film.
+ * Imgs marked `data-lightbox-skip` (decorative cut-outs) are left out.
+ */
+---
+<script>
+  import { openGallery, preload } from '../util/lightbox.js';
+  import { bestSource } from '../util/video.js';
+
+  const ITEMS = 'img:not([data-lightbox-skip])';
+
+  function itemsFor(group: Element) {
+    const imgs = Array.from(group.querySelectorAll<HTMLImageElement>(ITEMS));
+    const items = imgs.map((img) => {
+      const title = img.dataset.title || img.alt || '';
+      return img.dataset.video
+        ? { type: 'video', href: bestSource(img.dataset.video, img.dataset.hls), title, portrait: 'portrait' in img.dataset }
+        : { type: 'image', href: img.dataset.fullSrc || img.currentSrc || img.src, title };
+    });
+    return { imgs, items };
+  }
+
+  function openFrom(e: Event) {
+    const target = (e.target as Element).closest?.(
+      `[data-lightbox-group] [data-lightbox-open], [data-lightbox-group] ${ITEMS}`
+    ) as HTMLElement | null;
+    if (!target) return;
+    const img = (target.tagName === 'IMG'
+      ? target
+      : target.querySelector(ITEMS) ?? target.parentElement?.querySelector(ITEMS)) as HTMLImageElement | null;
+    if (!img) return;
+    e.preventDefault();
+    const { imgs, items } = itemsFor(img.closest('[data-lightbox-group]')!);
+    openGallery(items, imgs.indexOf(img), target);
+  }
+
+  // Gallery photos can be reached and opened from the keyboard
+  document.querySelectorAll<HTMLImageElement>(`[data-lightbox-group] ${ITEMS}`).forEach((img) => {
+    if (img.closest('[data-lightbox-open]')) return;   // the button around it is the control
+    img.tabIndex = 0;
+    img.setAttribute('role', 'button');
+  });
+
+  document.addEventListener('click', openFrom);
+  // Fetch the viewer as soon as a finger or mouse lands on a gallery, so it's
+  // ready (and films can start with sound) by the time the tap completes
+  for (const type of ['touchstart', 'pointerover']) {
+    document.addEventListener(type, (e) => {
+      if ((e.target as Element).closest?.('[data-lightbox-group]')) preload();
+    }, { passive: true });
+  }
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && (e.target as Element).matches?.(`[data-lightbox-group] ${ITEMS}`)) openFrom(e);
+  });
+</script>
+
+<style is:global>
+  /* ---------- viewer look: dark, clean, the same for photos and films ---------- */
+  .glightbox-clean .goverlay { background: rgba(10, 10, 14, 0.94); }
+
+  /* close button: always the same top-right spot, above everything */
+  .glightbox-clean .gclose {
+    top: max(14px, env(safe-area-inset-top)) !important;
+    right: 14px !important;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    opacity: 1;
+    z-index: 99999;
+  }
+  .glightbox-clean .gclose:hover { background: rgba(255, 255, 255, 0.25); }
+  .glightbox-clean .gclose svg { width: 16px; }
+
+  .glightbox-clean .gnext,
+  .glightbox-clean .gprev {
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .glightbox-clean .gnext:hover,
+  .glightbox-clean .gprev:hover { background: rgba(255, 255, 255, 0.25); }
+  .glightbox-clean .gnext svg,
+  .glightbox-clean .gprev svg { width: 14px; }
+  /* phones: swipe instead of arrows */
+  @media (max-width: 767px) {
+    .glightbox-clean .gnext,
+    .glightbox-clean .gprev { display: none; }
+  }
+
+  /* captions: light text on the dark backdrop, not a white box */
+  .glightbox-clean .gslide-description { background: transparent; }
+  .glightbox-clean .gdesc-inner { padding: 12px 4px 0; }
+  .glightbox-clean .gslide-title {
+    margin: 0;
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e5e7eb;
+    text-align: center;
+  }
+  .gslide-image img,
+  .gslide-video { border-radius: 8px; }
+
+  /* film controls in the site's accent colour */
+  .glightbox-container .plyr {
+    --plyr-color-main: #ec4899;
+    border-radius: 8px;
+  }
+  /* portrait films: never taller than the screen minus room for the caption */
+  .glightbox-container.is-portrait .gslide-video {
+    max-width: min(100vw, calc((100dvh - 190px) * 9 / 16)) !important;
+    margin: 0 auto;
+  }
+
+  /* phones and portrait films: controls big enough to tap */
+  .glightbox-container.is-portrait .plyr {
+    --plyr-control-icon-size: 22px;
+    --plyr-control-spacing: 12px;
+    --plyr-range-track-height: 6px;
+    --plyr-range-thumb-height: 18px;
+    --plyr-font-size-time: 15px;
+  }
+  @media (max-width: 767px) {
+    .glightbox-container .plyr {
+      --plyr-control-icon-size: 24px;
+      --plyr-control-spacing: 12px;
+      --plyr-range-track-height: 6px;
+      --plyr-range-thumb-height: 20px;
+      --plyr-font-size-time: 15px;
+      --plyr-font-size-base: 15px;
+    }
+    .glightbox-container .plyr__control--overlaid { padding: 22px; }
+    .glightbox-container .plyr__control--overlaid svg { width: 26px; height: 26px; }
+  }
+</style>

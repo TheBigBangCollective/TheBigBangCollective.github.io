@@ -1,9 +1,6 @@
 ---
 import inter400 from "@fontsource/inter/files/inter-latin-400-normal.woff2";
 import inter600 from "@fontsource/inter/files/inter-latin-600-normal.woff2";
-import lora400 from "@fontsource/lora/files/lora-latin-400-normal.woff2";
-import lora600 from "@fontsource/lora/files/lora-latin-600-normal.woff2";
-import bungee400 from '@fontsource/bungee-inline/files/bungee-inline-latin-400-normal.woff2';
 
 
 const { title } = Astro.props;
@@ -13,25 +10,21 @@ const twitterDescription = `Explore STEM marvels at the Big Bang Collective! Joi
 ---
 <meta charset="UTF-8" />
 <meta name="description" content={ogDescription} />
-<meta name="viewport" content="width=device-width" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#474284" />
 
 <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+<link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
 
 <meta name="generator" content={Astro.generator} />
 
 <title>{fullTitle}</title>
 
-<!-- Font preloads -->
+<!-- Only the body-text weights are preloaded; headings use system Arial Black -->
 <link rel="preload" href={inter400} as="font" type="font/woff2" crossorigin/>
 <link rel="preload" href={inter600} as="font" type="font/woff2" crossorigin/>
-<link rel="preload" href={lora400} as="font" type="font/woff2" crossorigin/>
-<link rel="preload" href={lora600} as="font" type="font/woff2" crossorigin/>
-<link rel="preload" href={bungee400} as="font" type="font/woff2" crossorigin/>
-
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
 <meta name="title" content={fullTitle} />
-<meta name="description" content={ogDescription} />
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website" />
@@ -51,6 +44,3 @@ const twitterDescription = `Explore STEM marvels at the Big Bang Collective! Joi
 <meta property="twitter:image" content={new URL('/images/bigbangcollective-social.jpg', Astro.url)} />
 <meta property="twitter:image:width" content="925" />
 <meta property="twitter:image:height" content="925" />
-
-<script is:inline defer src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
-<script is:inline defer src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/galleria.min.js"></script>

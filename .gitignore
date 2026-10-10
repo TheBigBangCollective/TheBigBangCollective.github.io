@@ -22,3 +22,10 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Finder/iCloud duplicate copies ("photo 2.jpg")
+* 2.*
+* 3.*
+
+# local Claude Code settings
+.claude/

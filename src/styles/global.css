@@ -1,22 +1,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* 
-body {
-    cursor: url('/radioactive.svg') 8 8, auto;
-}
-*/
 
-.font-bungee {
+body {
+    background-color: #fff;
+}
+
+/* headings: system Arial Black, no web font to load */
+.font-heading {
     font-family: 'Arial Black', Arial, sans-serif;
 }
 
 /* ───────────────── header & nav ───────────────── */
 .header-fixed {
-    /* header sits below the hero title text, aligned RIGHT */
     @apply fixed top-0 left-0 w-full bg-transparent text-white p-4
            flex items-center justify-end overflow-hidden
            h-14 z-50 transition duration-300 ease-in-out;
+}
+
+/* soft shade behind the nav while it sits over a hero photo */
+.header-fixed:not(.header-scrolled):not(.menu-is-open) {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0));
 }
 
 /* state after scrolling 10 px (added by scroll-header.js) */
@@ -24,26 +28,23 @@ body {
     @apply bg-white text-gray-800 shadow-md h-14;
 }
 
-/* bigger, fluid nav-link text that still scales down on tiny screens */
 .nav-link {
-    font-size: clamp(0.9rem, 3vw, 1.15rem); /* 14.4 px – 18.4 px */
+    font-size: clamp(0.9rem, 3vw, 1.15rem);
     @apply text-inherit no-underline transition-colors duration-200;
 }
 .nav-link:hover { @apply underline; }
 
-/* highlighted current page */
 .nav-link-active {
     @apply font-semibold border-b-2 border-current pointer-events-none;
 }
-/* ───────────────── header & nav ───────────────── */
 
-
-/* ───────────────── hero title ───────────────── */
+/* ───────────────── site title ───────────────── */
 .bb-title {
     /* sits ABOVE the header but ignores pointer events */
     @apply fixed top-10 text-center z-50 pointer-events-none;
+    left: 0;
     width: 100%;
-    font-size: clamp(48px, 6vw, 112px);   /* desktop/tablet default */
+    font-size: clamp(48px, 6vw, 112px);
     font-family: 'Arial Black', Arial, sans-serif;
     text-shadow:
         0 0 5px rgba(0, 0, 0, 0.5),
@@ -56,15 +57,19 @@ body {
         text-shadow 0.3s ease-in-out;
 }
 
+/* small version sits at the left of the bar, clear of the menu */
 .bb-title-scrolled {
-    /* desktop/tablet default */
     @apply top-0 z-50 pointer-events-none;
+    top: 0.6rem;
+    width: auto;
+    padding-left: 1rem;
+    text-align: left;
+    line-height: 1.15;
     font-size: 1rem;
     color: #000;
     text-shadow: none;
 }
 
-/* mobile tweak – ≤ 640 px (Tailwind’s `sm` breakpoint and down) */
 @media (max-width: 640px) {
   .bb-title-scrolled {
       left: 0;
@@ -76,271 +81,54 @@ body {
 
 @media (max-width: 400px) {
   .bb-title {
-      font-size: clamp(32px, 10vw, 48px); /* 320 px viewport → 32 px font */
+      font-size: clamp(32px, 10vw, 48px);
   }
-    .bb-title-scrolled {
+  .bb-title-scrolled {
       font-size: clamp(0.75rem, 6vw, 1rem);
   }
-
 }
 
-/* ───────────────── misc ───────────────── */
-.material-symbols-outlined {
-  font-variation-settings:
-    'FILL' 1,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24;
+/* ───────────────── hover tilt ─────────────────
+   Photos sit slightly askew like prints and slowly straighten on hover.
+   Set --tilt on an element to change its resting angle.               */
+.tilt {
+    transform: rotate(var(--tilt, 1.5deg));
+    transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.7s ease;
 }
-/* ───────────────── timeline visuals ───────────────── */
-
-/* ---- Old Rounded Card Style
-
-
-.timeline-wrapper {
-  position: relative;
-  width: 100%;
-  padding: 40px 20px;
+.tilt:hover,
+.tilt:focus-visible,
+.tilt:focus-within {
+    transform: rotate(0deg) scale(1.02);
 }
-.timeline-wrapper::before {
-  content: '';
-  @apply absolute inset-y-0 left-8 w-px bg-gray-300;
-  margin-top: 40px;
-  margin-bottom: 90px;
+@media (prefers-reduced-motion: reduce) {
+    .tilt { transition: none; }
 }
 
-.timeline-item {
-  @apply relative mb-12;
-}
+/* Photo/film buttons with pop-out cut-outs: no browser focus ring (it traces
+   the whole button, cut-out included). Keyboard users get an outline on the
+   white frame instead, via .film-frame / .hero-frame below. */
+.hero-figure:focus,
+.film:focus { outline: none; }
+.tl-play:focus:not(:focus-visible) { outline: none; }
+.tl-play:focus-visible { outline: 3px solid #ec4899; outline-offset: -6px; border-radius: 1rem; }
+.hero-figure:focus-visible .hero-frame,
+.film:focus-visible .film-frame { outline: 3px solid #ec4899; outline-offset: 3px; }
 
-
-.timeline-card {
-  @apply ml-8 sm:ml-10 flex flex-col items-stretch
-         gap-4 rounded-lg shadow-md p-4 min-h-0;
-}
-
-
-.timeline-dot {
-  @apply absolute w-5 h-5 rounded-full  shadow;
-  left: 2px;
-}
-*/
-
-.timeline-wrapper {
-  position: relative;
-  width: 100%;
-  padding: 0px;
-}
-
-.timeline-item {
-  @apply relative;
-}
-
-.timeline-connector {
-  @apply absolute bg-gray-400;
-  width: 20px;
-  height: 1px;
-  top: 58px;
-  left: 32px;
-  z-index: 10;
-}
-.timeline-item::before {
-  content: '';
-  position: absolute;
-  left: 23.4px;
-  top: 0;
-  height: 51px;
-  width: 1px;
-  background-color: #9CA3AF;
-  z-index: 0;
-}
-.timeline-item::after {
-  content: '';
-  position: absolute;
-  left: 23.4px;
-  top: 66px;
-  height: calc(100% - 66px);
-  width: 1px;
-  background-color: #9CA3AF;
-  z-index: 0;
-}
-
-.timeline-item:first-child::before {
-  content: '';
-  position: absolute;
-  left:    23.4px;
-  top:     18px;
-  height:  32px;
-  width:   1px;
-  background-color: transparent;
-
-  background-image: linear-gradient(
-    to bottom,
-    #9CA3AF 0px,
-    #9CA3AF 4px,
-
-    /* Gap #1: y=4→8px */
-    transparent 4px,
-    transparent 8px,
-
-    #9CA3AF 8px,
-    #9CA3AF 12px,
-
-    transparent 12px,
-    transparent 16px,
-
-    #9CA3AF 16px,
-    #9CA3AF 20px,
-
-    transparent 20px,
-    transparent 24px,
-
-    #9CA3AF 24px,
-    #9CA3AF 38px,
-    transparent 100%
-  );
-  background-repeat: no-repeat;
-  z-index: 1;
-}
-
-.timeline-item:last-child::after {
-  content: '';
-  position: absolute;
-  left: 23.4px;
-  top: 66px;
-  height: calc(100% - 98px);
-  width: 1px;
-  background-color: transparent;
-  background-image: linear-gradient(
-    to bottom,
-    #9CA3AF 0px,
-    #9CA3AF calc(100% - 28px),
-    transparent calc(100% - 28px),
-    transparent calc(100% - 24px),
-    #9CA3AF calc(100% - 24px),
-    #9CA3AF calc(100% - 20px),
-    transparent calc(100% - 20px),
-    transparent calc(100% - 16px),
-    #9CA3AF calc(100% - 16px),
-    #9CA3AF calc(100% - 12px),
-    transparent calc(100% - 12px),
-    transparent calc(100% - 8px),
-    #9CA3AF calc(100% - 8px),
-    #9CA3AF calc(100% - 4px),
-    transparent calc(100% - 4px),
-    transparent 100%
-  );
-  background-repeat: no-repeat;
-  z-index: 1;
-}
-
-
-
-.timeline-branch-circle {
-  @apply absolute border border-gray-400 rounded-full;
-  width: 16px;        /* 16px diameter */
-  height: 16px;       /* 16px diameter */
-  left: 16px;
-  top: 50px;
-  z-index: 10;
-  background: transparent; /* not strictly necessary, but ensures no fill */
-}
-
-
-.timeline-card {
-  @apply items-stretch p-8 min-h-0;
-  padding-left: 60px;
-}
-
+/* ───────────────── text ───────────────── */
 .intro-copy {
   @apply max-w-screen-md mx-auto text-center
-         text-lg sm:text-xl md:text-2xl leading-relaxed;
+         text-base sm:text-xl md:text-2xl leading-relaxed;
 }
 
-/* ---------------------------------------------------------------- */
-/* Gallery      */           
-/* ---------------------------------------------------------------- */
-
-.gallery {
-  width: 100%;
-  height: 150px;            /* always 150px tall on mobile */
-  overflow-x: auto;         /* scroll left/right if wider than container */
-  overflow-y: hidden;       /* never show vertical scrollbar on mobile */
-  display: block;
-  scroll-behavior: smooth;  /* optional: smooth scrolling */
-  opacity: 0;
-  transition: opacity 0.1s ease-in-out; /* fade in when revealed */
-
-}
-
-@media (min-width: 640px) {
-  .gallery {
-    width: 30%;            /* take up 30% of the container’s width */
-    height: 100px; 
-    max-height: 100px;         /* let JS set the max-height (via inline style) */
-    overflow-x: hidden;    /* hide horizontal scroll on desktop */
-    overflow-y: auto;      /* allow vertical scrolling if content overflows */
-  }
-}
-
-.gallery.clamped {
-  opacity: 1;
-}
-
-.gallery::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;      
-}
-.gallery::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.6); /* gray-400 at 60% opacity */
-  border-radius: 3px;
-}
-.gallery::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* Firefox: thin scrollbar */
-.gallery {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.6) transparent;
-}
 :target {
-  scroll-margin-top: 4rem;  /* height of your sticky nav */
-}
-.full-width-block {
-  @apply relative left-1/2 right-1/2 ml-[-50vw] mr-[-50vw] w-screen;
+  scroll-margin-top: 4rem;  /* height of the fixed nav */
 }
 
-/* Paste these new styles into your main CSS file */
-
-/* ───────────────── NEW MOBILE NAV STYLES ───────────────── */
-.mobile-nav-link {
-    @apply text-3xl font-semibold text-white no-underline transition-transform duration-200;
-}
-
-.mobile-nav-link:hover {
-    @apply scale-105;
-}
-
-/* For hiding text from sight but not from screen readers */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-/* ───────────────── END NEW STYLES ───────────────── */
-/* Add these rules to your main stylesheet */
+/* ───────────────── mobile menu open ───────────────── */
 .header-fixed.menu-is-open {
   @apply z-[101] bg-transparent shadow-none;
 }
 
-/* This ensures the button's icon is white against the dark menu */
 .header-fixed.menu-is-open button {
   @apply text-white;
 }

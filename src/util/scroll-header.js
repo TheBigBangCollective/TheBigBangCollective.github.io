@@ -11,6 +11,12 @@ export function doScroll() {
 }
 
 export function initScrollHeader() {
-    window.addEventListener('scroll', doScroll);
+    // At most once per frame, however fast scroll events arrive
+    let queued = false;
+    window.addEventListener('scroll', () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => { doScroll(); queued = false; });
+    }, { passive: true });
 	doScroll();
 }

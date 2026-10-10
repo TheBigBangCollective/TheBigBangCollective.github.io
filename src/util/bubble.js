@@ -50,21 +50,19 @@ class Particle {
         this.life -= 1;
     }
 
+    // Traces the particle's whole track as one path, so it's a single stroke
     draw(ctx, magneticField) {
+        ctx.beginPath();
+        let started = false;
         while (this.life >= 0) {
-            const [x0, y0] = [this.x, this.y];
             this.update(magneticField);
-            const [x1, y1] = [this.x, this.y];
-
-            if (this.startLife - this.life > 3) {
-                ctx.beginPath();
-                ctx.moveTo(x0, y0);
-                ctx.lineTo(x1, y1);
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-                ctx.lineWidth = 3;
-                ctx.stroke();
-            }
+            if (this.startLife - this.life <= 3) continue;
+            if (started) ctx.lineTo(this.x, this.y);
+            else { ctx.moveTo(this.x, this.y); started = true; }
         }
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
     }
 }
 
@@ -106,12 +104,13 @@ export function init(canvas) {
     function draw() {
         const w = canvas.width;
         const h = canvas.height;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-
-        // Fade Canvas
+        // Fade old tracks towards transparent so the page background shows through
         const delta = Date.now() - lastDraw;
         if (delta > 300) {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
             ctx.fillRect(0, 0, w, h);
+            ctx.globalCompositeOperation = 'source-over';
             lastDraw = Date.now();
         }
 

@@ -1,27 +1,13 @@
 import { z, defineCollection } from 'astro:content';
 
-/* -------- existing festivals collection (unchanged) -------- */
-const festivalCollection = defineCollection({
-  type: 'content',
-  schema: z.object({
-    title:     z.string(),
-    startDate: z.date(),
-    endDate:   z.date(),
-    link:      z.string().url().optional(),
-    country:   z.string(),
-    svg:       z.any(),
-    summary:   z.string().optional()
-  })
-});
-
-/* -------- reusable gallery item -------- */
+/* A photo, or a folder of photos, relative to the year file */
 const galleryItem = z.object({
-  src:   z.string(),            // e.g. photos/ostrava-dj.jpg
-  title: z.string().optional(),            // shown on hover
-  desc:  z.string().optional()  // future use / captions
+  src:   z.string(),
+  title: z.string().optional(),
+  desc:  z.string().optional()
 });
 
-/* -------- years collection (now with link support) -------- */
+/* One file per year in src/content/years */
 const yearsCollection = defineCollection({
   type: 'content',
   schema: z.object({
@@ -37,7 +23,7 @@ const yearsCollection = defineCollection({
         /* Shown in place of the dates while they are still unconfirmed */
         dates_note:  z.string().optional(),
         logo:        z.string().optional(),
-        sponsor:        z.string().optional(),
+        sponsor:     z.string().optional(),
         images:      z.array(galleryItem).optional(),
         video:       z.string().url().optional(),
         video_ratio: z.string().regex(/^\d+\/\d+$/).optional(),
@@ -53,6 +39,5 @@ const yearsCollection = defineCollection({
 });
 
 export const collections = {
-  festivals: festivalCollection,
   years:     yearsCollection
 };

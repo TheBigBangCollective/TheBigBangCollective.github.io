@@ -1,14 +1,37 @@
 ---
+/**
+ * Looping showreel banner. A responsive still shows instantly; the video only starts
+ * downloading once the rest of the page has loaded, and is skipped entirely
+ * for visitors who prefer reduced motion or have Data Saver on.
+ */
+import { Image } from "astro:assets";
 
-const classes = Astro.props.class;
-
+const { class: classes, src } = Astro.props;
 ---
 
 <section class={classes}>
   <div class="video-container">
-    <video-js id="vid1" class="video">
-      <source src="https://kws-public-stuff.s3.amazonaws.com/bigbang-womad-2019-q0.mp4" />
-    </video-js>
+    {src && (
+      <Image
+        src={src}
+        alt=""
+        widths={[480, 800, 1280, 1600]}
+        sizes="100vw"
+        quality={70}
+        loading="eager"
+        fetchpriority="high"
+        class="video"
+      />
+    )}
+    <video
+      id="banner-video"
+      class="video"
+      muted
+      playsinline
+      disablepictureinpicture
+      preload="none"
+      aria-hidden="true"
+    ></video>
   </div>
   <div class="text-container">
     <slot />
@@ -28,40 +51,43 @@ const classes = Astro.props.class;
   }
   .video-container {
     position: relative;
-    padding-bottom: 56.25%;
-    /* Specific for 16:9 aspect ratio */
-    height: 0;
+    aspect-ratio: 16 / 9;
     width: 100%;
     overflow: hidden;
+    background-color: #474284;
   }
   .video {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: fill;
-
+    object-fit: cover;
   }
 </style>
 
 <script>
-  import videojs from "video.js";
-  import "video.js/dist/video-js.css";
-
   const videoUrls = [
     "https://kws-public-stuff.s3.amazonaws.com/bigbang-womad-2019-q0.mp4",
     "https://kws-public-stuff.s3.amazonaws.com/bigbang-roskilde-2022-q0.mp4"
-  ]
-
+  ];
   const randomVideoUrl = () => videoUrls[Math.floor(Math.random() * videoUrls.length)];
 
-  const player = videojs("vid1", { autoplay: true, muted: true });
-  player.ready(() => {
-    player.src(randomVideoUrl());
-  });
-  player.on('ended', () => {
-    player.src(randomVideoUrl());
-  });
+  const video = document.getElementById("banner-video") as HTMLVideoElement | null;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const saveData = (navigator as any).connection?.saveData;
 
+  function start() {
+    if (!video) return;
+    video.src = randomVideoUrl();
+    video.play().catch(() => {});
+    video.addEventListener("ended", () => {
+      video.src = randomVideoUrl();
+      video.play().catch(() => {});
+    });
+  }
+
+  if (video && !reducedMotion && !saveData) {
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
+  }
 </script>

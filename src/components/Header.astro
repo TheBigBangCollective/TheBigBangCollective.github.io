@@ -1,9 +1,7 @@
 ---
 /**
- * Responsive header that shows page links on desktop
- * and a hamburger menu on mobile.
- * Breakpoint is 1280px (xl).
- * Fix: Header is now transparent when menu is open, even on scroll.
+ * Page links on desktop, full-screen menu below 1280px (xl).
+ * The header stays transparent while the menu is open, even when scrolled.
  */
 const navPages = [
   { path: '/', label: '2026' },
@@ -30,27 +28,99 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, '') || '/');
       ))}
     </nav>
 
-    <button id="menu-toggle-btn" type="button" class="xl:hidden text-inherit p-2 -mr-2">
-      <span class="material-symbols-outlined icon-menu">menu</span>
-      <span class="material-symbols-outlined icon-close hidden">close</span>
+    <button id="menu-toggle-btn" type="button" class="xl:hidden text-inherit p-2 -mr-2" aria-controls="mobile-menu" aria-expanded="false">
+      <svg class="icon-menu w-7 h-7 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+      <svg class="icon-close hidden w-7 h-7 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       <span class="sr-only">Open/Close main menu</span>
     </button>
   </div>
 </header>
 
-<div id="mobile-menu" class="fixed inset-0 z-[100] bg-gray-900 bg-opacity-95 backdrop-blur-sm text-white hidden flex-col items-center justify-center">
-  <nav class="flex flex-col items-center justify-center text-center space-y-8">
-    {navPages.map(page => (
+<div id="mobile-menu" class="hidden" aria-label="Site menu">
+  <nav class="mm-nav">
+    {navPages.map((page, i) => (
       <a
         href={page.path}
-        class:list={['mobile-nav-link', { 'nav-link-active': page.path === currentPath }]}
+        class:list={['mm-link', `mm-${i % 4}`, { 'mm-active': page.path === currentPath }]}
+        style={`--i: ${i}`}
         aria-current={page.path === currentPath ? 'page' : undefined}
       >
         {page.label}
       </a>
     ))}
   </nav>
+  <p class="mm-foot">The Big Bang Collective</p>
 </div>
+
+<style>
+  /* full-screen menu: dark stage with coloured spotlights, links billed like
+     a festival line-up and sliding in one after another */
+  #mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    color: #fff;
+    background:
+      radial-gradient(22rem 22rem at 10% 15%, rgba(251, 191, 36, 0.28), transparent 70%),
+      radial-gradient(24rem 24rem at 95% 45%, rgba(244, 114, 182, 0.25), transparent 70%),
+      radial-gradient(26rem 26rem at 30% 100%, rgba(96, 165, 250, 0.25), transparent 70%),
+      #111827;
+  }
+  .mm-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.1rem;
+  }
+  .mm-link {
+    font-family: 'Arial Black', Arial, sans-serif;
+    font-size: clamp(1.4rem, 6.4vw, 2.4rem);
+    max-width: 92vw;
+    text-align: center;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    transform: rotate(var(--tilt, 0deg));
+    animation: mm-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i) * 55ms);
+    transition: transform 0.3s ease;
+  }
+  .mm-0 { --tilt: -2deg; background-image: linear-gradient(90deg, #fbbf24, #f472b6); }
+  .mm-1 { --tilt: 1.5deg; background-image: linear-gradient(90deg, #34d399, #60a5fa); }
+  .mm-2 { --tilt: -1deg; background-image: linear-gradient(90deg, #a78bfa, #f472b6); }
+  .mm-3 { --tilt: 2deg; background-image: linear-gradient(90deg, #60a5fa, #34d399); }
+  .mm-link:hover, .mm-link:focus-visible { transform: rotate(0deg) scale(1.06); }
+  /* the page you're on gets a ticket-stub outline */
+  .mm-active {
+    padding: 0.1rem 0.9rem;
+    border: 2px dashed rgba(255, 255, 255, 0.6);
+    border-radius: 0.6rem;
+  }
+  .mm-foot {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    text-align: center;
+    padding: 0 1rem;
+    animation: mm-in 0.45s ease both;
+    animation-delay: 400ms;
+  }
+  @keyframes mm-in {
+    from { opacity: 0; transform: translateY(14px) rotate(var(--tilt, 0deg)); }
+    to { opacity: 1; transform: rotate(var(--tilt, 0deg)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mm-link, .mm-foot { animation: none; }
+  }
+</style>
 
 <script is:inline>
   document.addEventListener('DOMContentLoaded', () => {
@@ -69,14 +139,17 @@ const currentPath = (Astro.url.pathname.replace(/\/$/, '') || '/');
       iconMenu.classList.toggle('hidden', !isMenuOpen);
       iconClose.classList.toggle('hidden', isMenuOpen);
 
-      // This class now controls the header's visibility and style
       header.classList.toggle('menu-is-open');
+      toggleBtn.setAttribute('aria-expanded', String(!isMenuOpen));
 
       // Prevent the main page from scrolling when menu is open
       document.body.style.overflow = isMenuOpen ? '' : 'hidden';
     }
 
     toggleBtn.addEventListener('click', toggleMenu);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) toggleMenu();
+    });
 
     // Also close menu when a link is clicked
     mobileMenu.querySelectorAll('a').forEach(link => {

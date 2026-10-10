@@ -1,70 +1,85 @@
 ---
 import Headline from "./Headline.astro";
+import { Image } from "astro:assets";
+import map from "../assets/site/map.png";
+import PersonCard from "./PersonCard.astro";
 
 const { collaborators = {}, coords = {}, affiliationLinks = {} } = Astro.props;
+
+const countries = Object.keys(collaborators);
+const slug = (country) => country.replace(/\s+/g, "-").toLowerCase();
+const headcount = (n) => `${n} ${n === 1 ? "person" : "people"}`;
+const first = countries[0];
 ---
 
-<section class="full-width-block bg-cyan-400/30 py-16">
+<section class="collab">
   <Headline>Our International Collaborators</Headline>
-  <p class="intro-copy my-12 mx-auto px-4">Click on a country to see the team.</p>
+  <p class="intro-copy mb-10 mx-auto px-4">
+    Physicists across Europe help run our stages. Tap a country on the map,
+    or use the tabs, to meet them.
+  </p>
 
-  <div class="max-w-screen-xl mx-auto px-4 flex flex-col lg:flex-row items-center lg:items-start gap-10">
+  <div class="max-w-screen-xl mx-auto px-4 flex flex-col lg:flex-row items-center lg:items-start gap-8 lg:gap-10">
     <!-- Square map with overlay dots -->
-    <div
-      class="relative w-full lg:max-w-3xl aspect-square mx-auto"
-    >
-      <img
-        src="/map.png"
-        alt="Blank outline map of Europe with collaborator markers"
-        class="w-full h-full object-contain select-none pointer-events-none"
+    <div class="relative w-full max-w-xl aspect-square mx-auto">
+      <Image
+        src={map}
+        widths={[400, 768, 1200]}
+        sizes="(min-width: 1024px) 768px, 100vw"
+        alt="Outline map of Europe with a marker in each collaborating country"
+        class="collab-map w-full h-full object-contain select-none pointer-events-none"
       />
 
-      <!-- Overlay SVG for interactive dots -->
-      <svg
-        id="team-map"
-        viewBox="0 0 768 768"
-        class="absolute inset-0 w-full h-full"
-      >
+      <!-- Dots are mouse/touch only; the tabs below are the accessible route -->
+      <svg id="team-map" viewBox="0 0 768 768" class="absolute inset-0 w-full h-full" aria-hidden="true">
         {Object.keys(coords).map((country) => (
           <circle
-            key={country}
             cx={coords[country].x}
             cy={coords[country].y}
             r="10"
-            class="fill-cyan-600 cursor-pointer transition-colors"
+            class="fill-teal-700 cursor-pointer transition-colors"
             data-country={country}
           />
         ))}
       </svg>
     </div>
 
-    <!-- Country lists -->
-    <div id="collaborator-lists" class="flex-1 space-y-8">
-      {Object.entries(collaborators).map(([country, people], idx) => (
+    <!-- Country switcher and people -->
+    <div class="collab-panel">
+      <div class="collab-tabs" role="tablist" aria-label="Countries">
+        {countries.map((country, i) => (
+          <button
+            type="button"
+            role="tab"
+            class="collab-tab"
+            id={`tab-${slug(country)}`}
+            aria-controls={`list-${slug(country)}`}
+            aria-selected={i === 0 ? "true" : "false"}
+            tabindex={i === 0 ? "0" : "-1"}
+            data-country={country}
+          >{country}</button>
+        ))}
+      </div>
+
+      <div class="collab-current">
+        <h3 class="font-heading collab-name">{first}</h3>
+        <p class="collab-meta">
+          <span class="collab-count">{headcount(collaborators[first]?.length ?? 0)}</span>
+          · <span class="collab-pos">1 of {countries.length}</span>
+        </p>
+      </div>
+
+      {countries.map((country, i) => (
         <div
-          id={`list-${country.replace(/\s+/g, "-").toLowerCase()}`}
-          class={`team-list ${idx === 0 ? "block" : "hidden"}`}
+          id={`list-${slug(country)}`}
+          class="team-list"
+          role="tabpanel"
+          aria-labelledby={`tab-${slug(country)}`}
+          hidden={i !== 0}
         >
-          <h3 class="font-bungee text-2xl sm:text-3xl mb-4 text-center">
-            {country}
-          </h3>
-          <ul
-            class="grid gap-6 justify-center [grid-template-columns:repeat(auto-fit,minmax(10rem,1fr))]"
-          >
-            {people.map((p) => (
-              <li class="team-card p-4 rounded font-bungee text-gray-900 bg-gray-100/80 text-center">
-                <h4>{p.name}</h4>
-                {p.affiliation && (
-                  <p class="text-sm opacity-90">
-                    <a
-                      href={affiliationLinks[p.affiliation] ?? "#"}
-                      class="text-xs opacity-90 no-underline"
-                    >
-                      {p.affiliation}
-                    </a>
-                  </p>
-                )}
-              </li>
+          <ul class="collab-people">
+            {collaborators[country].map((p) => (
+              <PersonCard name={p.name} affiliation={p.affiliation} link={affiliationLinks[p.affiliation]} />
             ))}
           </ul>
         </div>
@@ -73,7 +88,7 @@ const { collaborators = {}, coords = {}, affiliationLinks = {} } = Astro.props;
   </div>
 
  <!-- Interaction script -->
-<script type="module" client:load>
+<script type="module">
   /* ------------------------------------------------------------------ */
   /* Constants                                                           */
   /* ------------------------------------------------------------------ */
@@ -82,84 +97,106 @@ const { collaborators = {}, coords = {}, affiliationLinks = {} } = Astro.props;
   const R_SELECTED        = 15;
   const R_SELECTED_HOVER  = 18;
 
-  const PLANE_FILL        = "#155e75";      // Tailwind cyan-800
-  const PLANE_DURATION    = 7800;           // ms in flight (slightly < 5 s)
-  const INTERVAL_DELAY    = 8000;           // 5 s between hops
-  const IDLE_RESTART_MS   = 30000;          // restart auto-cycle after 30 s
+  const PROTON_COLOUR     = "#19665c";      // the band's teal
+  const FLIGHT_DURATION   = 3000;           // ms in flight on the tour
+  const CLICK_FLIGHT      = 900;            // ms in flight after a click
+  const READ_DELAY        = 4000;           // ms to read each list before the next hop
+  const FIRST_HOP_DELAY   = 2500;
+  const IDLE_RESTART_MS   = 30000;          // restart the tour after 30 s idle
+  const SWIPE_MIN_PX      = 50;
+
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ------------------------------------------------------------------ */
   /* DOM hooks                                                           */
   /* ------------------------------------------------------------------ */
+  const root       = document.querySelector(".collab");
   const svg        = document.getElementById("team-map");
   const dots       = Array.from(svg.querySelectorAll("[data-country]"));
-  const lists      = document.querySelectorAll(".team-list");
+  const tabs       = Array.from(root.querySelectorAll("[role=tab]"));
+  const panels     = Array.from(root.querySelectorAll("[role=tabpanel]"));
+  const nameEl     = root.querySelector(".collab-name");
+  const countEl    = root.querySelector(".collab-count");
+  const posEl      = root.querySelector(".collab-pos");
+
+  // Tab order is the single list of countries; `current` indexes into it
+  const countries  = tabs.map((t) => t.dataset.country);
+  const dotFor     = (country) => dots.find((d) => d.dataset.country === country);
 
   /* ------------------------------------------------------------------ */
   /* State                                                               */
   /* ------------------------------------------------------------------ */
-  let currentSelected = null;
-  let currentHover    = null;
+  let current         = 0;
+  let currentSelected = null;   // selected map dot
+  let currentHover    = null;   // hovered map dot
 
-  let animId          = null;   // rAF id for plane animation
-  let autoInterval    = null;   // setInterval id
-  let selectTimeout   = null;   // setTimeout id for delayed select
+  let animId          = null;   // rAF id for the proton's flight
+  let hopTimeout      = null;   // next tour step; null when the tour is off
   let restartTimeout  = null;   // idle-restart timer
 
   /* ------------------------------------------------------------------ */
-  /* Plane element                                                       */
+  /* The proton: a charged particle that curves between countries, like */
+  /* one bending in a detector's magnetic field, leaving a bubble trail  */
   /* ------------------------------------------------------------------ */
-  const plane = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  plane.setAttribute(
-    "d",
-    "M0,-6 L14,0 L0,6 L2,0 Z"              // little paper-plane
-  );
-  plane.setAttribute("fill", PLANE_FILL);
-  plane.setAttribute("opacity", 0);
-  plane.style.pointerEvents = "none";
-  svg.appendChild(plane);
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const proton = document.createElementNS(SVG_NS, "g");
+  proton.innerHTML = `
+    <circle r="16" fill="${PROTON_COLOUR}" opacity="0.18"></circle>
+    <circle r="10" fill="${PROTON_COLOUR}"></circle>
+    <text text-anchor="middle" dy="4.5" font-size="12" font-weight="700" fill="#fff" font-family="Arial, sans-serif">p⁺</text>`;
+  proton.setAttribute("opacity", 0);
+  proton.style.pointerEvents = "none";
+  svg.appendChild(proton);
 
-  /* ------------------------------------------------------------------ */
-  /* Plane animation                                                     */
-  /* ------------------------------------------------------------------ */
-  function flyPlane(fromDot, toDot, duration = PLANE_DURATION) {
+  // A bubble left behind on the track, fading out like in a bubble chamber
+  function dropBubble(x, y) {
+    const bubble = document.createElementNS(SVG_NS, "circle");
+    bubble.setAttribute("cx", x);
+    bubble.setAttribute("cy", y);
+    bubble.setAttribute("r", 2.6);
+    bubble.setAttribute("fill", PROTON_COLOUR);
+    bubble.style.pointerEvents = "none";
+    bubble.style.transition = "opacity 2.5s ease-out";
+    svg.insertBefore(bubble, proton);
+    requestAnimationFrame(() => requestAnimationFrame(() => { bubble.style.opacity = "0"; }));
+    setTimeout(() => bubble.remove(), 2600);
+  }
+
+  function flyProton(fromDot, toDot, duration = FLIGHT_DURATION) {
     if (!fromDot || !toDot || fromDot === toDot) return;
-
-    // Stop any in-flight animation
     if (animId) cancelAnimationFrame(animId);
 
-    const start = {
-      x: +fromDot.getAttribute("cx"),
-      y: +fromDot.getAttribute("cy"),
-    };
-    const end = {
-      x: +toDot.getAttribute("cx"),
-      y: +toDot.getAttribute("cy"),
-    };
-    const dx    = end.x - start.x;
-    const dy    = end.y - start.y;
-    const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+    const start = { x: +fromDot.getAttribute("cx"), y: +fromDot.getAttribute("cy") };
+    const end   = { x: +toDot.getAttribute("cx"),   y: +toDot.getAttribute("cy") };
+    // Bend the path sideways by a third of its length: a quadratic curve
+    // through a control point off to one side of the straight line
+    const dx = end.x - start.x, dy = end.y - start.y;
+    const ctrl = { x: (start.x + end.x) / 2 - dy / 3, y: (start.y + end.y) / 2 + dx / 3 };
+    const at = (t) => ({
+      x: (1 - t) ** 2 * start.x + 2 * (1 - t) * t * ctrl.x + t * t * end.x,
+      y: (1 - t) ** 2 * start.y + 2 * (1 - t) * t * ctrl.y + t * t * end.y,
+    });
 
-    plane.setAttribute("opacity", 1);
-    plane.setAttribute("transform", `translate(${start.x} ${start.y}) rotate(${angle})`);
-
+    proton.setAttribute("opacity", 1);
     let t0 = null;
+    let lastBubble = start;
     function step(ts) {
       if (!t0) t0 = ts;
       const progress = Math.min((ts - t0) / duration, 1);
-      const x = start.x + dx * progress;
-      const y = start.y + dy * progress;
-
-      // Fade out for the last 15 % of the trip
-      if (progress > 0.80) {
-        plane.setAttribute("opacity", (1 - progress -0.1) / 0.15);
+      // ease in and out, so it accelerates away and slows into the dot
+      const t = progress < 0.5 ? 2 * progress * progress : 1 - (-2 * progress + 2) ** 2 / 2;
+      const pos = at(t);
+      proton.setAttribute("transform", `translate(${pos.x} ${pos.y})`);
+      if (Math.hypot(pos.x - lastBubble.x, pos.y - lastBubble.y) > 9) {
+        dropBubble(pos.x, pos.y);
+        lastBubble = pos;
       }
-
-      plane.setAttribute("transform", `translate(${x} ${y}) rotate(${angle})`);
+      if (progress > 0.9) proton.setAttribute("opacity", (1 - progress) / 0.1);
 
       if (progress < 1) {
         animId = requestAnimationFrame(step);
       } else {
-        plane.setAttribute("opacity", 0);   // hide on arrival
+        proton.setAttribute("opacity", 0);
         animId = null;
       }
     }
@@ -167,25 +204,39 @@ const { collaborators = {}, coords = {}, affiliationLinks = {} } = Astro.props;
   }
 
   /* ------------------------------------------------------------------ */
-  /* Show / select / highlight helpers                                   */
+  /* Map highlight helpers                                               */
   /* ------------------------------------------------------------------ */
-  function show(country) {
-    lists.forEach((el) =>
-      el.classList.toggle(
-        "hidden",
-        el.id !== `list-${country.replace(/\s+/g, "-").toLowerCase()}`
-      )
-    );
+  /* Name pill above a dot: the hovered one, or the selected one otherwise */
+  const label = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  label.innerHTML = `
+    <rect rx="18" height="36" fill="#fff" stroke="${PROTON_COLOUR}" stroke-width="2.5"></rect>
+    <text text-anchor="middle" y="25" font-size="21" font-weight="700" fill="${PROTON_COLOUR}" font-family="Inter, Arial, sans-serif"></text>`;
+  label.style.pointerEvents = "none";
+  label.style.transition = "opacity 0.15s ease";
+  svg.appendChild(label);
+  const labelRect = label.querySelector("rect");
+  const labelText = label.querySelector("text");
+
+  function showLabel(dot) {
+    if (!dot) { label.style.opacity = "0"; return; }
+    labelText.textContent = dot.dataset.country;
+    const width = labelText.getComputedTextLength() + 30;
+    labelRect.setAttribute("width", width);
+    labelRect.setAttribute("x", -width / 2);
+    label.setAttribute("transform", `translate(${dot.getAttribute("cx")} ${+dot.getAttribute("cy") - 60})`);
+    label.style.opacity = "1";
   }
 
   function selectDot(dot) {
+    if (!dot) return;
     if (currentSelected) {
       currentSelected.setAttribute("r", R_DEFAULT);
-      currentSelected.classList.remove("fill-cyan-800", "ring", "ring-2");
+      currentSelected.classList.remove("fill-teal-900", "ring", "ring-2");
     }
     currentSelected = dot;
     currentSelected.setAttribute("r", R_SELECTED);
-    currentSelected.classList.add("fill-cyan-800", "ring", "ring-2");
+    currentSelected.classList.add("fill-teal-900", "ring", "ring-2");
+    if (!currentHover) showLabel(dot);
   }
 
   function highlight(dot) {
@@ -207,122 +258,194 @@ const { collaborators = {}, coords = {}, affiliationLinks = {} } = Astro.props;
         currentHover.classList.add("ring", "ring-2");
       }
     }
+    showLabel(currentHover || currentSelected);
   }
 
   /* ------------------------------------------------------------------ */
-  /* Utility                                                             */
+  /* Selecting a country: updates tabs, list, heading and map together   */
+  /* ------------------------------------------------------------------ */
+  function select(index) {
+    current = (index + countries.length) % countries.length;
+    const country = countries[current];
+    tabs.forEach((tab, i) => {
+      tab.setAttribute("aria-selected", i === current);
+      tab.tabIndex = i === current ? 0 : -1;
+    });
+    panels.forEach((panel, i) => { panel.hidden = i !== current; });
+    const people = panels[current].querySelectorAll("li").length;
+    nameEl.textContent = country;
+    countEl.textContent = `${people} ${people === 1 ? "person" : "people"}`;
+    posEl.textContent = `${current + 1} of ${countries.length}`;
+    selectDot(dotFor(country));
+  }
+
+  // A person picked this country: pause the tour and give the proton a quick hop
+  function choose(index) {
+    const from = dotFor(countries[current]);
+    stopTour();
+    select(index);
+    if (!reduceMotion) {
+      flyProton(from, dotFor(countries[current]), CLICK_FLIGHT);
+      restartTimeout = setTimeout(startTour, IDLE_RESTART_MS);
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Auto-tour: wait, fly the proton to the next country, land, repeat   */
+  /* ------------------------------------------------------------------ */
+  function scheduleHop(wait) {
+    hopTimeout = setTimeout(() => {
+      const next = (current + 1) % countries.length;
+      flyProton(dotFor(countries[current]), dotFor(countries[next]));
+      hopTimeout = setTimeout(() => {
+        select(next);
+        scheduleHop(READ_DELAY);
+      }, FLIGHT_DURATION);
+    }, wait);
+  }
+
+  function startTour(wait = READ_DELAY) {
+    if (reduceMotion || hopTimeout) return;
+    scheduleHop(wait);
+  }
+
+  function stopTour() {
+    clearTimeout(hopTimeout);
+    hopTimeout = null;
+    clearTimeout(restartTimeout);
+    if (animId) cancelAnimationFrame(animId);
+    proton.setAttribute("opacity", 0);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Map: hover shows the nearest country's name, click picks it         */
   /* ------------------------------------------------------------------ */
   function svgCoords(evt) {
-    const rect   = svg.getBoundingClientRect();
-    const scaleX = 768 / rect.width;
-    const scaleY = 768 / rect.height;
+    const rect = svg.getBoundingClientRect();
     return {
-      x: (evt.clientX - rect.left) * scaleX,
-      y: (evt.clientY - rect.top) * scaleY,
+      x: (evt.clientX - rect.left) * (768 / rect.width),
+      y: (evt.clientY - rect.top) * (768 / rect.height),
     };
   }
 
-  function nearestDot(x, y) {
-    let nearest = null;
-    let minDist = Infinity;
-    dots.forEach((d) => {
-      const dx = x - +d.getAttribute("cx");
-      const dy = y - +d.getAttribute("cy");
-      const dist = Math.hypot(dx, dy);
-      if (dist < minDist) {
-        minDist = dist;
-        nearest = d;
+  function nearestDot(evt) {
+    const { x, y } = svgCoords(evt);
+    const dist = (d) => Math.hypot(x - d.getAttribute("cx"), y - d.getAttribute("cy"));
+    return dots.reduce((best, d) => (dist(d) < dist(best) ? d : best), dots[0]);
+  }
+
+  svg.addEventListener("mousemove", (e) => highlight(nearestDot(e)));
+  svg.addEventListener("mouseleave", () => highlight(null));
+  svg.addEventListener("click", (e) => {
+    const index = countries.indexOf(nearestDot(e).dataset.country);
+    if (index >= 0) choose(index);
+  });
+
+  /* ------------------------------------------------------------------ */
+  /* Tabs, arrow keys and swipes                                        */
+  /* ------------------------------------------------------------------ */
+  tabs.forEach((tab, i) => tab.addEventListener("click", () => choose(i)));
+
+  const KEY_TARGETS = {
+    ArrowLeft:  () => current - 1,
+    ArrowRight: () => current + 1,
+    Home:       () => 0,
+    End:        () => countries.length - 1,
+  };
+  root.querySelector("[role=tablist]").addEventListener("keydown", (e) => {
+    if (!KEY_TARGETS[e.key]) return;
+    e.preventDefault();
+    choose(KEY_TARGETS[e.key]());
+    tabs[current].focus();
+  });
+
+  let touchStart = null;
+  panels.forEach((panel) => {
+    panel.addEventListener("touchstart", (e) => { touchStart = e.touches[0]; }, { passive: true });
+    panel.addEventListener("touchend", (e) => {
+      if (!touchStart) return;
+      const dx = e.changedTouches[0].clientX - touchStart.clientX;
+      const dy = e.changedTouches[0].clientY - touchStart.clientY;
+      touchStart = null;
+      if (Math.abs(dx) > SWIPE_MIN_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        choose(current + (dx < 0 ? 1 : -1));
       }
     });
-    return nearest;
-  }
-
-  /* ------------------------------------------------------------------ */
-  /* Auto-cycle logic                                                    */
-  /* ------------------------------------------------------------------ */
-  const sortedDots = dots.sort((a, b) =>
-    a.dataset.country.localeCompare(b.dataset.country)
-  );
-
-  function advanceAutoCycle() {
-    const from = currentSelected;
-    const nextIndex =
-      (sortedDots.indexOf(from) + 1 + sortedDots.length) % sortedDots.length;
-    const to = sortedDots[nextIndex];
-
-    // Fly first…                                                           
-    flyPlane(from, to);
-
-    // …then update selection/visible list just before landing
-    selectTimeout = setTimeout(() => {
-      show(to.dataset.country);
-      selectDot(to);
-    }, PLANE_DURATION);
-  }
-
-  function startAutoCycle() {
-    if (autoInterval) return;          // already running
-    autoInterval = setInterval(advanceAutoCycle, INTERVAL_DELAY);
-  }
-
-  function stopAutoCycle() {
-    clearInterval(autoInterval);
-    autoInterval = null;
-    clearTimeout(selectTimeout);
-    if (animId) cancelAnimationFrame(animId);
-    plane.setAttribute("opacity", 0);
-
-    clearTimeout(restartTimeout);
-    restartTimeout = setTimeout(() => startAutoCycle(), IDLE_RESTART_MS);
-  }
-
-  /* ------------------------------------------------------------------ */
-  /* Event listeners                                                     */
-  /* ------------------------------------------------------------------ */
-  svg.addEventListener("mousemove", (e) => {
-    const { x, y } = svgCoords(e);
-    highlight(nearestDot(x, y));
   });
-
-  svg.addEventListener("mouseleave", () => highlight(null));
-
-  svg.addEventListener("click", (e) => {
-    const { x, y } = svgCoords(e);
-    const dot = nearestDot(x, y);
-    if (dot) {
-      show(dot.dataset.country);
-      selectDot(dot);
-      stopAutoCycle();
-    }
-  });
-
-  dots.forEach((d) =>
-    d.addEventListener("click", (e) => {
-      e.stopPropagation();
-      show(d.dataset.country);
-      selectDot(d);
-      stopAutoCycle();
-    })
-  );
 
   /* ------------------------------------------------------------------ */
   /* Initialise                                                          */
   /* ------------------------------------------------------------------ */
-  if (dots.length) {
-    selectDot(sortedDots[0]);
-    show(sortedDots[0].dataset.country);
-  }
-  startAutoCycle();
+  if (countries.length) select(0);
+  startTour(FIRST_HOP_DELAY);
 </script>
 
 
   <style>
-    .team-card {
-      min-width: 10rem;
-      text-align: center;
+    .collab {
+      --accent: #19665c;
+      padding: 2.5rem 0 4rem;
+      background: #e3f5ec;
     }
-    .team-card h4 {
-      font-size: clamp(0.75rem, 2.5vw, 1rem);
+    .collab :global(h2) { color: var(--accent); }
+    /* calm the map's bright green down to match the band */
+    .collab :global(.collab-map) { filter: saturate(0.55) brightness(1.08); }
+    .collab-panel {
+      flex: 1;
+      width: 100%;
+      max-width: 36rem;
+    }
+
+    /* Country tabs: white pills, the chosen one filled in teal */
+    .collab-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+    .collab-tab {
+      padding: 0.4rem 0.85rem;
+      border: 2px solid transparent;
+      border-radius: 999px;
+      background: #fff;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 12px -8px rgba(0, 0, 0, 0.35);
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    }
+    /* keep all five on one row on phones */
+    @media (max-width: 30rem) {
+      .collab-tab { padding: 0.5rem 0.55rem; font-size: 0.8rem; }
+    }
+    .collab-tab:hover { border-color: var(--accent); }
+    .collab-tab[aria-selected="true"] {
+      background: var(--accent);
+      color: #fff;
+    }
+    .collab-tab:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .collab-current { text-align: center; margin-bottom: 1.5rem; }
+    .collab-name {
+      font-size: 1.75rem;
+      line-height: 1.1;
+      color: var(--accent);
+    }
+    .collab-meta {
+      margin-top: 0.2rem;
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+
+    .collab-people {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
     }
   </style>
 </section>

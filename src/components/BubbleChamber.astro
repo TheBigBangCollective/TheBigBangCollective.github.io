@@ -5,7 +5,8 @@
     import { init } from '../util/bubble.js';
     document.addEventListener('DOMContentLoaded', function() {
         const canvas = document.getElementById('bubbleCanvas');
-        if (canvas) {
+        // Decorative only: skip the animation for visitors who prefer less motion
+        if (canvas && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             init(canvas);
         }
     });

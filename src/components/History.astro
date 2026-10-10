@@ -4,14 +4,14 @@ import historyImage1 from "../assets/cern-restaurant-1.jpg";
 import historyImage2 from "../assets/womad-queue.jpg";
 import historyImage3 from "../assets/science-pavilion.jpg";
 
-const optimizedImage1 = await getImage({src: historyImage1, format: 'jpg', width: 1024});
-const optimizedImage2 = await getImage({src: historyImage2, format: 'jpg', width: 1024});
-const optimizedImage3 = await getImage({src: historyImage3, format: 'jpg', width: 1024});
+const optimizedImage1 = await getImage({src: historyImage1, format: 'webp', width: 1024, quality: 75});
+const optimizedImage2 = await getImage({src: historyImage2, format: 'webp', width: 1024, quality: 75});
+const optimizedImage3 = await getImage({src: historyImage3, format: 'webp', width: 1024, quality: 75});
 
 ---
 
 <div class="grid odd">
-  <div class="text" style="background-color: #6a8167; color: #c8f7c5;">
+  <div class="text" style="background-color: #4f654c; color: #c8f7c5;">
     <section>
       <p>
         The Festival Programme began in 2015. At the end of a long day visiting
@@ -36,10 +36,10 @@ const optimizedImage3 = await getImage({src: historyImage3, format: 'jpg', width
       </p>
     </section>
   </div>
-  <div class="image" style={`background-image: url(${optimizedImage1.src});`}>
-  </div>
+  <div class="image" style={`background-image: url(${optimizedImage1.src});`}></div>
+</div>
 <div class="grid even">
-  <div class="text" style="background-color: #F6CB7F; color: #aa2e00;">
+  <div class="text" style="background-color: #F6CB7F; color: #8a2400;">
     <section>
       <p>
         That first World of Physics offered a 3 day programme of hands-on
@@ -57,11 +57,11 @@ const optimizedImage3 = await getImage({src: historyImage3, format: 'jpg', width
         It wasn’t the hard slog they had known at school, with
         uninspiring teachers. They weren’t made to feel stupid with their
         questions. They revelled in this new found interest and kept coming back
-        each day, and still do.. each year.
+        each day, and still do each year.
       </p>
     </section>
   </div>
-  <div class="image" style={`background-image: url(${optimizedImage2.src});`}>
+  <div class="image" style={`background-image: url(${optimizedImage2.src});`}></div>
 </div>
 <div class="grid odd">
   <div class="text" style="background-color: #F57E7E; color: #551700;">
@@ -79,18 +79,19 @@ const optimizedImage3 = await getImage({src: historyImage3, format: 'jpg', width
         the Roskilde Festival in Denmark.
       </p>
       <p>
-        In 2024 we are proud to announce that we will be launching a new Science
-        Pavilion at the Smukfest in Denmark and Rototon Sunsplash in Spain.
+        In 2024 we launched new Science Pavilions at Smukfest in Denmark and
+        Rototom Sunsplash in Spain, and the programme has kept growing since,
+        reaching the United States, Germany and the UK in 2026.
       </p>
     </section>
   </div>
-  <div class="image" style={`background-image: url(${optimizedImage3.src});`}>
+  <div class="image" style={`background-image: url(${optimizedImage3.src});`}></div>
 </div>
 <style>
   .grid {
     display: flex;
     flex-wrap: wrap;
-    flex-direction: row-re;
+    
     width: 100%;
   }
   .text {
@@ -101,7 +102,6 @@ const optimizedImage3 = await getImage({src: historyImage3, format: 'jpg', width
     justify-content: center;
     flex-direction: column;
     width: 50%;
-    opacity: 0.8;
   }
   .text section {
     margin: 5vw;
@@ -127,9 +127,6 @@ const optimizedImage3 = await getImage({src: historyImage3, format: 'jpg', width
     .image {
       width: 100vw;
       height: 50vw;
-    }
-    .image img {
-      width: 100%;
     }
   }
 </style>

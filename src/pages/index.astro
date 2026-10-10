@@ -2,26 +2,28 @@
 import FrontPage    from "../layouts/FrontPage.astro";
 import Headline     from "../components/Headline.astro";
 import Timeline     from "../components/Timeline.astro";
-import BannerImages from "../components/BannerImages.astro";
+import HeroClip     from "../components/HeroClip.astro";
 import { getEntryBySlug } from "astro:content";
 
-import quantumCorral    from "../assets/images/2026/luck/Quantum_Corral.jpeg";
-import solderingWorkshop from "../assets/images/2026/luck/Soldering_Workshop.jpeg";
+import willie from "../assets/images/2026/willie-nelson-hello.jpg";
+import willieCutout from "../assets/images/2026/willie-nelson-cutout.png";
 
 /* get the 2026 markdown entry */
 const { data } = await getEntryBySlug('years', '2026');
 ---
 
 <FrontPage>
-  <BannerImages
+  <HeroClip
     slot="banner"
-    images={[
-      { src: quantumCorral,    alt: "The Quantum Corral tent at LUCK Reunion" },
-      { src: solderingWorkshop, alt: "A soldering workshop inside the Quantum Corral" }
-    ]}
+    image={willie}
+    cutout={willieCutout}
+    alt="Willie Nelson, in his red bandana, saying hello to CERN"
+    video="https://d18az0o70pr8ah.cloudfront.net/LUCK2026.mp4"
+    label="Willie Nelson says hi to CERN"
+    kicker="Physics at music festivals. This year we started at Willie Nelson's LUCK Reunion in Texas."
   />
 
-  <div class="text-gray-800 p-8 pt-2">
+  <div class="text-gray-800 px-5 pb-5 md:p-8 md:pt-2">
     <Headline>{data.title}</Headline>
 
       <p class="intro-copy">

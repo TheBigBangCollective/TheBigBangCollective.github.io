@@ -1,92 +1,40 @@
-# The Big Bang Collective Website
+# The Big Bang Collective website
 
-This is the official website for The Big Bang Collective, built using modern web technologies to showcase our STEM festivals and initiatives. The website serves as a central hub for information about our events, galleries of past activities, and updates about our community.
+**Status**
+- **What:** static site for The Big Bang Collective (physics at music festivals), built with Astro and Tailwind.
+- **Live:** [www.thebigbangcollective.com](https://www.thebigbangcollective.com), deployed from `main` by GitHub Actions (`.github/workflows/deploy.yml`) to GitHub Pages. Pushing to `main` publishes.
+- **State:** maintained.
+- **Gotchas:**
+  - Videos are not in the repo. They live in the S3 bucket `thebigbangcollective`, served through CloudFront (`d18az0o70pr8ah.cloudfront.net`). Each video also has an adaptive HLS copy at `hls/<slug>/hd.m3u8`, where the slug is the file name lower-cased with other characters turned into `-` (see `src/util/video.js`).
+  - Each video's still is `src/assets/posters/<slug>.jpg`. Backstage Science stills and cut-outs are `src/assets/backstage/<id>.jpg` and `<id>-cutout.png`.
+  - Festival content for each year is in `src/content/years/<year>.md`; each festival's photos are a folder under `src/assets/images/<year>/`.
+  - Don't leave stray copies (e.g. Finder's `photo 2.jpg`) in `src/assets`: glob imports can pull them into the build.
+  - Resize photos before adding them (2000px on the long side, under 2 MB). Large originals stay in the git history for good.
 
-## 🛠️ Technology Stack
+## Develop
 
-- [Astro](https://astro.build/) - Our core framework for fast, static site generation
-- [TypeScript](https://www.typescriptlang.org/) - For type-safe development
-- [Tailwind CSS](https://tailwindcss.com/) - For styling, including:
-  - [@tailwindcss/typography](https://tailwindcss.com/docs/typography-plugin) - For beautiful typography
-- [Video.js](https://videojs.com/) - For enhanced video playback
-- [date-fns](https://date-fns.org/) - For date manipulation and formatting
-- Custom fonts:
-  - [Bungee Inline](https://fonts.google.com/specimen/Bungee+Inline)
-  - [Inter](https://fonts.google.com/specimen/Inter)
-  - [Lora](https://fonts.google.com/specimen/Lora)
-
-## 📁 Project Structure
-
-```text
-/
-├── src/
-│   ├── assets/      # Static assets like images
-│   ├── components/  # Reusable Astro components
-│   ├── content/     # Content collections
-│   ├── layouts/     # Page layouts
-│   ├── pages/       # Route pages
-│   ├── styles/      # Global styles
-│   └── util/        # Utility functions
-├── public/          # Static files
-└── dist/           # Built files (generated)
+```sh
+npm install
+npm run dev       # localhost:4321
+npm run build     # outputs to ./dist/
+npm run preview   # serve the build
 ```
 
-## 🚀 Getting Started
+## Layout
 
-1. **Prerequisites**
-   - Node.js (Latest LTS version recommended)
-   - npm (comes with Node.js)
+```text
+src/
+  assets/      images (posters, backstage, festival photos, gallery, site)
+  components/  Astro components
+  content/     per-year festival data
+  layouts/     page shells
+  pages/       routes
+  styles/      global CSS
+  util/        client-side helpers (video, lightbox, header, bubbles)
+public/        files served as-is
+```
 
-2. **Clone the repository**
-   ```sh
-   git clone https://github.com/TheBigBangCollective/TheBigBangCollective.github.io.git
-   cd TheBigBangCollective.github.io
-   ```
-
-3. **Install dependencies**
-   ```sh
-   npm install
-   ```
-
-4. **Available Commands**
-   ```sh
-   # Start development server
-   npm run dev       # Runs at localhost:4321
-
-   # Build for production
-   npm run build    # Outputs to ./dist/
-
-   # Preview production build
-   npm run preview
-
-   # Run Astro commands
-   npm run astro
-   ```
-
-## 🔄 Deployment
-
-The website is automatically deployed using GitHub Actions whenever changes are pushed to the `main` branch. The deployment process:
-
-1. Triggers on push to `main` branch
-2. Builds the site using the Astro build process
-3. Deploys to GitHub Pages
-4. Makes the site available at [www.thebigbangcollective.com](https://www.thebigbangcollective.com)
-
-The deployment configuration can be found in `.github/workflows/deploy.yml`.
-
-## 🤝 Contributing
-
-We welcome contributions! If you'd like to improve the website:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
-Please ensure your code follows the existing style and includes appropriate documentation.
-
-## 👥 Maintainers
+## Maintainers
 
 - [Orlando](https://github.com/Orlando-PB)
 - [Kaj Siebert](https://github.com/kws)
-

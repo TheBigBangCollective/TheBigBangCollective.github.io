@@ -1,13 +1,16 @@
 ---
 /**
- * Backstage Science page – Updated July 20, 2025
- * – NEW: Release toggles for "Coming Soon" videos
- * – Bold jump‑to buttons with site palette
- * – Smooth scroll + anchor links
- * – Video max‑height and 9/16 aspect‑ratio kept
- * - Text justified with last line centered
+ * Backstage Science: each film is a tilted, framed still with a cut-out of
+ * the artist breaking out above the frame (like Willie on the front page).
+ * Clicking opens the film in the shared viewer, where you can arrow through
+ * every artist.
+ *
+ * To publish an unreleased film, flip its toggle below.
  */
-export const title = "Backstage Science";
+import { Image, getImage } from "astro:assets";
+import type { ImageMetadata } from "astro:assets";
+import Lightbox from "./Lightbox.astro";
+import { hlsUrl } from "../util/video.js";
 
 // --- VIDEO RELEASE TOGGLES ---
 // Set a video to `true` to make it public.
@@ -87,317 +90,364 @@ const festivalLabels: Record<string, string> = {
   Paleo: 'Paleo Festival',
 };
 
-const hellfestVideos = videos.filter(v => v.festival === 'Hellfest');
-const montreuxVideos = videos.filter(v => v.festival === 'Montreux');
-const paleoVideos = videos.filter(v => v.festival === 'Paleo');
+// Each film's still and the same frame with the background removed
+// (src/assets/backstage/<id>.jpg and <id>-cutout.png). `cut` is how far down
+// the frame's top edge sits, so the artist's head breaks out above it.
+const stills = import.meta.glob<{ default: ImageMetadata }>('/src/assets/backstage/*.jpg', { eager: true });
+const cutouts = import.meta.glob<{ default: ImageMetadata }>('/src/assets/backstage/*-cutout.png', { eager: true });
+const cuts: Record<string, number> = {
+  'linkin-park-colin-dave': 43,
+  'jim-digby': 21,
+  'jordan-rudess': 31,
+  'neil-westfall': 24,
+  'micah-nelson': 30,
+  'qotsa-paleo': 13,   // low enough to keep the half-hidden man's whole head in the frame
+};
+// Where someone's head was already cut off by the top of the original photo,
+// only the part of the picture left of this % breaks out of the frame; they
+// stay inside it, cropped by the white edge like a normal photo.
+const breakOutUpTo: Record<string, number> = {
+  'neil-westfall': 62,
+};
+
+const cases = await Promise.all(videos.map(async (video) => {
+  const still = stills[`/src/assets/backstage/${video.id}.jpg`]?.default;
+  return {
+    ...video,
+    still,
+    stillFull: still ? (await getImage({ src: still, format: 'webp', width: 900, quality: 75 })).src : undefined,
+    cutout: cutouts[`/src/assets/backstage/${video.id}-cutout.png`]?.default,
+    cut: cuts[video.id] ?? 20,
+    keep: breakOutUpTo[video.id] ?? 100,
+    hls: hlsUrl(video.src),
+  };
+}));
 ---
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>{title} | The Big Bang Collective</title>
-    <style>
-      /* smooth anchor scrolling */
-      html { scroll-behavior: smooth; }
+<section class="backstage">
+  <!-- the all-access pass, swinging on its lanyard -->
+  <div class="pass" aria-hidden="true">
+    <span class="pass-strap"></span>
+    <div class="pass-card">
+      <span class="pass-band">ALL ACCESS</span>
+      <span class="pass-title">Backstage<br/>Science</span>
+      <span class="pass-sub">The Big Bang Collective</span>
+    </div>
+  </div>
 
-      body {
-        margin: 0;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
-          "Helvetica Neue", sans-serif;
-        background: #fff;
-      }
+  <header class="bs-head">
+    <h1 class="bs-title">Backstage Science</h1>
+  </header>
 
-      .backstage-science {
-        color: #1a1a1a;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem 1.5rem 4rem;
-      }
+  <div class="bs-paper">
+    <p>
+      The Big Bang Collective have been meeting up with members of some of the
+      coolest bands around at festivals this summer, talking backstage with
+      musicians about their interest in science and technology, where we are
+      going with A.I. and all things creative and emotional. This coming
+      together of the science and artistic worlds in an informal, relaxed
+      setting shows how closely the two are intertwined, right down to the long,
+      stressful, tiring process of producing an album or a science experiment.
+      The similarities are rarely seen because they're often hidden from public
+      view, but the creative and intellectual challenges are strikingly similar.
+    </p>
+    <p><strong>We are calling this Backstage Science.</strong></p>
+  </div>
 
-      h1 { font-size: 2.5rem; text-align: center; padding-bottom: 30px;}
-      h2 {
-        font-size: 1.8rem;
-        margin: 3rem 0 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e0e0e0;
-      }
-      h3.video-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-top: 0;
-        margin-bottom: 1rem;
-        color: #333;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid #e0e0e0;
-        text-align: left;
-      }
-      p {
-        line-height: 1.6;
-        text-align: justify;
-        text-align-last: center;
-      }
+  <div class="bs-floor">
+    <!-- cables snaking across the floor behind the films -->
+    <svg class="bs-cables" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M-20 140 C 220 60, 300 330, 520 250 S 860 120, 1020 300" />
+      <path d="M-20 560 C 180 640, 360 420, 560 560 S 820 760, 1020 620" />
+      <path d="M120 1020 C 160 820, 420 900, 470 760 S 700 640, 760 1020" />
+    </svg>
 
-      /* intro panel */
-      .intro-panel {
-        background: #f5f5f5;
-        border-left: 4px solid #ccc;
-        padding: 1.5rem;
-        margin-bottom: 3rem;
-        max-width: 80ch;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      /* jump menu & buttons */
-      .festival-nav {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 0.75rem;
-        margin-bottom: 2rem;
-      }
-      .jump-btn {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        text-decoration: none;
-        font-weight: 500;
-        color: #fff;
-        transition: opacity 0.2s;
-      }
-      .jump-btn:hover { opacity: 0.85; }
-      
-      /* Style for unreleased video links */
-      .jump-btn.coming-soon {
-        background-color: #9ca3af; /* gray-400 */
-        cursor: not-allowed;
-        opacity: 0.7;
-      }
-      .jump-btn.coming-soon:hover {
-        opacity: 0.7;
-      }
-
-
-      /* your site’s bold colours */
-      .jump-btn.hellfest { background-color: #681717; }
-      .jump-btn.montreux { background-color: #134372; }
-      .jump-btn.paleo    { background-color: #1a6e35; }
-
-      /* video blocks */
-      .video-block {
-        margin: 2rem 0 3rem;
-      }
-      .video-block p {
-          margin-top: 0;
-      }
-      .video-block figure {
-        margin: 1rem auto 0;
-        max-width: 420px;
-      }
-      .video-block video {
-        max-width: 100%; /* Changed for better responsive behavior */
-        margin: auto;
-        height: auto;
-        aspect-ratio: 9 / 16;
-        border-radius: 0.5rem;
-        background: #000;
-        object-fit: contain;
-        display: block;
-      }
-      .video-block:target { scroll-margin-top: 2rem; }
-
-      /* "Coming Soon" placeholder styles */
-      .coming-soon-block {
-        background-color: #f9fafb; /* gray-50 */
-        border: 2px dashed #e5e7eb; /* gray-200 */
-        border-radius: 0.5rem;
-        padding: 2rem;
-        text-align: center;
-        margin: 2rem 0 3rem;
-      }
-      .coming-soon-block h3 {
-        color: #4b5563; /* gray-600 */
-        font-size: 1.25rem;
-      }
-      .coming-soon-block p {
-        color: #6b7281; /* gray-500 */
-        text-align: center;
-        text-align-last: center;
-      }
-      .coming-soon-block:target { scroll-margin-top: 2rem; }
-
-
-      /* Responsive layout for wider screens */
-      @media (min-width: 900px) {
-        .video-block, .coming-soon-block-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 3rem;
-            margin: 5rem 0;
-        }
-
-        .video-description {
-            flex: 1 1 50%;
-            min-width: 0;
-        }
-
-        .video-description p {
-            text-align: justify;
-            text-align-last: left;
-        }
-        
-        .video-block figure, .coming-soon-block {
-            flex: 1 1 50%; /* Adjusted from 60% for balance */
-            max-width: none;
-            margin: 0;
-        }
-      }
-      
-    </style>
-  </head>
-  <body>
-    <main>
-      <section class="backstage-science">
-        <h1>{title}</h1>
-
-        <nav class="festival-nav">
-          {videos.map(video => (
-            <a 
-              href={video.released ? `#${video.id}` : '#'}
-              class:list={[
-                "jump-btn",
-                video.festival.toLowerCase(),
-                { "coming-soon": !video.released }
-              ]}
-              onclick={!video.released ? "event.preventDefault();" : ""}
-              title={!video.released ? "Coming Soon!" : ""}
+    <ul class="bs-cases" data-lightbox-group>
+      {cases.map((c) => (
+        <li id={c.id} class:list={['bs-item', { locked: !c.released }]}>
+          {c.released ? (
+            <button
+              type="button"
+              class="film tilt"
+              data-lightbox-open
+              aria-label={`Watch: ${c.title}`}
+              style={c.still ? `--cut: ${c.cut}%; --keep: ${c.keep}%; aspect-ratio: ${c.still.width} / ${c.still.height}` : undefined}
             >
-              {`${festivalLabels[video.festival]}: ${video.artist}`}
-            </a>
-          ))}
-        </nav>
-
-        <div class="intro-panel">
-          <p>
-            The Big Bang Collective have been meeting up with members of some of
-            the coolest bands around at Festivals this Summer, talking
-            backstage with musicians about their interest in science and
-            technology, where are we going with A.I. and all things creative
-            and emotional. This coming together of people from the science and
-            artistic world in an informal, relaxed environment, continues to
-            show how closely science and art are intertwined, right down to
-            the long, stressful, tiring process of producing an album or a
-            science experiment. The similarities are there, but rarely seen
-            because they are often hidden from public view. But the creative
-
-            and intellectual challenges are strikingly similar.
-          </p>
-          <p><strong>We are calling this Backstage Science.</strong></p>
-          <p>
-            First is a series of chats that Big Bang Collective member Eduardo
-            Saenz de Cabezón had backstage at Hellfest 2025.
-          </p>
-        </div>
-
-        <!-- HELLFEST 2025 SECTION -->
-        <h2 id="hellfest-2025">HELLFEST 2025</h2>
-        {hellfestVideos.map(video => (
-          video.released ? (
-            <div class="video-block" id={video.id}>
-              <div class="video-description">
-                <h3 class="video-title">{video.title}</h3>
-                <p>{video.description}</p>
-              </div>
-              <figure>
-                <video
-                  controls
-                  src={`${video.src}#t=0.1`}
-                  title={video.title}
-                  preload="metadata"
+              <span class="film-frame" aria-hidden="true"></span>
+              {c.still && (
+                <Image
+                  src={c.still}
+                  alt={c.title}
+                  widths={[400, 800]}
+                  sizes="(min-width: 768px) 30vw, 90vw"
+                  class="film-still"
+                  data-title={c.title}
+                  data-full-src={c.stillFull}
+                  data-video={c.src}
+                  data-hls={c.hls}
+                  data-portrait
                 />
-              </figure>
-            </div>
+              )}
+              {c.cutout && (
+                <Image src={c.cutout} alt="" widths={[400, 800]} sizes="(min-width: 768px) 30vw, 90vw" class="film-cutout" data-lightbox-skip />
+              )}
+              <span class="film-play" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current ml-0.5"><path d="M8 5v14l11-7z" /></svg>
+                Watch
+              </span>
+            </button>
           ) : (
-            <div class="coming-soon-block-wrapper" id={video.id}>
-                <div class="video-description">
-                    <h3 class="video-title">{video.title}</h3>
-                    <p>{video.description}</p>
-                </div>
-                <div class="coming-soon-block">
-                    <h3>Coming Soon!</h3>
-                    <p>Check back soon for this exclusive chat.</p>
-                </div>
-            </div>
-          )
-        ))}
+            <div class="film-soon">🔒 Coming soon</div>
+          )}
+          <h2 class="bs-film-title">{c.title}</h2>
+          <p class="bs-film-text">{c.description}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
 
+<Lightbox />
 
-        <!-- MONTREUX JAZZ FESTIVAL 2025 SECTION -->
-        <h2 id="montreux-2025">MONTREUX JAZZ FESTIVAL 2025</h2>
-        {montreuxVideos.map(video => (
-          video.released ? (
-            <div class="video-block" id={video.id}>
-              <div class="video-description">
-                <h3 class="video-title">{video.title}</h3>
-                <p>{video.description}</p>
-              </div>
-              <figure>
-                <video
-                  controls
-                  src={`${video.src}#t=0.1`}
-                  title={video.title}
-                  preload="metadata"
-                />
-              </figure>
-            </div>
-          ) : (
-             <div class="coming-soon-block-wrapper" id={video.id}>
-                <div class="video-description">
-                    <h3 class="video-title">{video.title}</h3>
-                    <p>{video.description}</p>
-                </div>
-                <div class="coming-soon-block">
-                    <h3>Coming Soon!</h3>
-                    <p>Check back soon for this exclusive chat.</p>
-                </div>
-            </div>
-          )
-        ))}
+<style>
+  .backstage {
+    position: relative;
+    overflow: hidden;
+    color: #e7e5e4;
+    /* black stage curtain folds across the top, dark floor below */
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 46px, rgba(0,0,0,0.35) 46px 60px) top / 100% 15rem no-repeat,
+      linear-gradient(#0d0d10, #1b1a1f 15rem, #232127);
+  }
 
-        <!-- PALEO FESTIVAL 2025 SECTION -->
-        <h2 id="paleo-2025">PALEO FESTIVAL 2025</h2>
-        {paleoVideos.map(video => (
-          video.released ? (
-            <div class="video-block" id={video.id}>
-              <div class="video-description">
-                <h3 class="video-title">{video.title}</h3>
-                <p>{video.description}</p>
-              </div>
-              <figure>
-                <video
-                  controls
-                  src={`${video.src}#t=0.1`}
-                  title={video.title}
-                  preload="metadata"
-                />
-              </figure>
-            </div>
-          ) : (
-            <div class="coming-soon-block-wrapper" id={video.id}>
-              <div class="video-description">
-                <h3 class="video-title">{video.title}</h3>
-                <p>{video.description}</p>
-              </div>
-              <div class="coming-soon-block">
-                <h3>Coming Soon!</h3>
-                <p>Check back soon for this exclusive chat.</p>
-              </div>
-            </div>
-          )
-        ))}
-      </section>
-    </main>
-  </body>
-</html>
+  /* hazard tape along the top edge */
+  .backstage::before {
+    content: '';
+    display: block;
+    height: 14px;
+    background: repeating-linear-gradient(-45deg, #facc15 0 18px, #111 18px 36px);
+  }
+
+  .bs-head {
+    text-align: center;
+    padding: 3rem 1rem 1rem;
+  }
+  .bs-title {
+    font-family: 'Arial Black', Arial, sans-serif;
+    font-size: clamp(2.4rem, 7vw, 5rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #f5f5f4;
+    /* stencil spray: soft edge glow */
+    text-shadow: 0 0 1px rgba(255,255,255,0.4), 0 6px 24px rgba(0,0,0,0.6);
+  }
+
+  /* ---------- all-access pass ---------- */
+  .pass {
+    position: absolute;
+    top: 0;
+    right: 1.5rem;
+    z-index: 3;
+    transform-origin: top center;
+    animation: swing 6s ease-in-out infinite;
+  }
+  .pass-strap {
+    display: block;
+    width: 18px;
+    height: clamp(4rem, 12vw, 9rem);
+    margin: 0 auto;
+    background: repeating-linear-gradient(0deg, #dc2626 0 10px, #b91c1c 10px 20px);
+  }
+  .pass-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    width: 9.5rem;
+    padding: 0 0 0.9rem;
+    border-radius: 0.6rem;
+    overflow: hidden;
+    color: #111;
+    background: linear-gradient(160deg, #fff 60%, #e5e7eb);
+    box-shadow: 0 14px 28px -10px rgba(0,0,0,0.7);
+    text-align: center;
+  }
+  .pass-band {
+    width: 100%;
+    padding: 0.35rem 0;
+    font-family: 'Arial Black', Arial, sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    color: #fff;
+    background: #dc2626;
+  }
+  .pass-title {
+    font-family: 'Arial Black', Arial, sans-serif;
+    font-size: 1.05rem;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+  .pass-sub { font-size: 0.6rem; font-weight: 600; color: #6b7280; padding: 0 0.5rem; }
+  @keyframes swing {
+    0%, 100% { transform: rotate(4deg); }
+    50% { transform: rotate(-3deg); }
+  }
+  .pass:hover { animation-duration: 1.2s; }
+  @media (max-width: 1279px) {
+    .pass { display: none; }
+  }
+
+  /* ---------- intro on a taped-up sheet ---------- */
+  .bs-paper {
+    position: relative;
+    max-width: 44rem;
+    margin: 1rem auto 1rem;
+    padding: 1.75rem 2rem 1.5rem;
+    color: #292524;
+    background: #faf7f0;
+    line-height: 1.7;
+    transform: rotate(-0.8deg);
+    box-shadow: 0 18px 30px -18px rgba(0,0,0,0.8);
+  }
+  .bs-paper p + p { margin-top: 0.9rem; }
+  /* two strips of gaffer tape holding it up */
+  .bs-paper::before,
+  .bs-paper::after {
+    content: '';
+    position: absolute;
+    top: -12px;
+    width: 90px;
+    height: 26px;
+    background: rgba(161, 161, 170, 0.85);
+  }
+  .bs-paper::before { left: 1.5rem; transform: rotate(-6deg); }
+  .bs-paper::after { right: 1.5rem; transform: rotate(5deg); }
+  @media (max-width: 640px) {
+    .bs-paper { margin: 1rem 1rem 0.5rem; padding: 1.5rem 1.25rem; }
+  }
+
+  /* ---------- the floor of cases ---------- */
+  .bs-floor {
+    position: relative;
+    padding: 0 1rem 5rem;
+  }
+  .bs-cables {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  @media (max-width: 767px) {
+    .bs-cables { display: none; }   /* they'd run behind the text in one column */
+  }
+  .bs-cables path {
+    fill: none;
+    stroke: #050506;
+    stroke-width: 7;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    filter: drop-shadow(0 2px 0 rgba(255,255,255,0.06));
+  }
+
+  .bs-cases {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: 4.5rem 3rem;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding-top: 0.5rem;
+  }
+  .bs-item { scroll-margin-top: 8rem; }
+  /* one column on phones: closer together, with a thin line between films */
+  @media (max-width: 640px) {
+    .bs-cases { gap: 0; padding-top: 0; }
+    .bs-item { padding: 1.25rem 0 1.75rem; }
+    .bs-item + .bs-item { border-top: 1px solid rgba(231, 229, 228, 0.18); }
+  }
+
+  /* ---------- tilted frame with the artist breaking out of the top ---------- */
+  .film {
+    --tilt: 2deg;
+    position: relative;
+    display: block;
+    width: 100%;
+    cursor: pointer;
+  }
+  .bs-item:nth-child(even) .film { --tilt: -2deg; }
+  .film-frame,
+  .film :global(.film-still),
+  .film :global(.film-cutout) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .film-frame {
+    top: calc(var(--cut) - 7px);
+    left: -7px; right: -7px; bottom: -7px;
+    width: auto; height: auto;
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 0 24px 40px -18px #000;
+  }
+  .film :global(.film-still) {
+    object-fit: cover;
+    clip-path: inset(var(--cut) 0 0 0 round 0.7rem);
+  }
+  .film :global(.film-cutout) {
+    object-fit: cover;
+    pointer-events: none;
+    /* below the frame edge the still shows the same thing, so the cut-out
+       can be trimmed on the right without anyone noticing */
+    -webkit-mask-image: linear-gradient(to right, #000 var(--keep), transparent var(--keep));
+    mask-image: linear-gradient(to right, #000 var(--keep), transparent var(--keep));
+  }
+  .film-play {
+    position: absolute;
+    right: 0.9rem;
+    bottom: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 1rem 0.45rem 0.8rem;
+    border-radius: 999px;
+    font-weight: 700;
+    color: #fff;
+    background: #dc2626;
+    box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.6);
+    transition: transform 0.25s ease;
+  }
+  .film:hover .film-play,
+  .film:focus-visible .film-play { transform: scale(1.08); }
+
+  .film-soon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 3;
+    border: 2px dashed #57534e;
+    border-radius: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #facc15;
+  }
+
+  .bs-film-title {
+    margin-top: 1.25rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fafaf9;
+  }
+  .bs-film-text {
+    margin-top: 0.4rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #a8a29e;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pass { animation: none; }
+  }
+</style>

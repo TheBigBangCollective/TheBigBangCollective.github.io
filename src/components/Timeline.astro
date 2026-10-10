@@ -1,6 +1,13 @@
 ---
+/**
+ * The festival line-up for a year: one card per festival on a vertical
+ * "particle track", each with its logo, dates, text, video and a photo mosaic.
+ * Photos and videos come from the year's markdown file (src/content/years).
+ */
 import { Image, getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro:assets';
+import Lightbox from './Lightbox.astro';
+import { videoSlug, hlsUrl } from '../util/video.js';
 
 interface Festival {
   name: string;
@@ -20,442 +27,485 @@ interface Festival {
 
 const { festivals }:{ festivals: Festival[] } = Astro.props;
 
-// 1. Load ALL images in src/assets
-const allImages = import.meta.glob<{ default: ImageMetadata }>('/src/assets/**/*.{jpeg,jpg,png,gif,webp}', { eager: true });
-const sponsorLogos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/sponsors/*.{jpeg,jpg,png,gif,webp,svg}', { eager: true });
+const allImages = import.meta.glob<{ default: ImageMetadata }>('/src/assets/**/*.{jpeg,jpg,png,gif,webp,svg}', { eager: true });
+// Still frames for each video, named after the video file (see src/assets/posters)
+const posters = import.meta.glob<{ default: ImageMetadata }>('/src/assets/posters/*.jpg', { eager: true });
+const posterFor = (url: string) => posters[`/src/assets/posters/${videoSlug(url)}.jpg`]?.default;
 
-function slugify(str: string) {
-  return str.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
-}
+const slugify = (str: string) =>
+  str.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
+const titleFromFilename = (path: string) =>
+  (path.split('/').pop()?.split('.')[0] || '').replace(/_/g, ' ');
 
-function formatTitleFromFilename(path: string) {
-  const fileName = path.split('/').pop()?.split('.')[0] || '';
-  return fileName.replace(/_/g, ' '); 
-}
+const dateRange = (f: Festival) => {
+  if (!(f.start && f.end)) return f.dates_note || 'Dates to be confirmed';
+  const start = new Date(f.start).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const end = new Date(f.end).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  return `${start} – ${end}`;
+};
+
+// Parts for the ticket-stub date: "MAR" / "17–20" / "2026"
+const ticketFor = (f: Festival) => {
+  if (!(f.start && f.end)) return undefined;
+  const start = new Date(f.start), end = new Date(f.end);
+  const month = (d: Date) => d.toLocaleDateString('en-GB', { month: 'short', timeZone: 'UTC' }).slice(0, 3).toUpperCase();
+  return {
+    month: month(start) === month(end) ? month(start) : `${month(start)}–${month(end)}`,
+    days: `${start.getUTCDate()}–${end.getUTCDate()}`,
+    year: end.getUTCFullYear(),
+  };
+};
 
 /* Sort chronologically; undated slots keep their authored order at the end */
-const startValue = (f: Festival) =>
-  f.start ? new Date(f.start).valueOf() : Number.POSITIVE_INFINITY;
+const startValue = (f: Festival) => f.start ? new Date(f.start).valueOf() : Number.POSITIVE_INFINITY;
 festivals.sort((a, b) => startValue(a) - startValue(b));
 
-/* PRE-PROCESSING */
-const processedFestivals = await Promise.all(festivals.map(async (f) => {
-  const bg   = f.bg   || '#f3f4f6';
-  const text = f.text || 'inherit';
+// Beside a film, photos sit in a 2x2 grid and the rest collapse into "+N".
+// Without one, every photo shows in justified rows (see .justified below).
+const SHOWN_WITH_VIDEO = 4;
 
-  const sponsorImagePath = f.sponsor ? `/src/assets/${f.sponsor}` : null;
-  const sponsorImageModule = sponsorImagePath ? sponsorLogos[sponsorImagePath] : null;
-
-  // Process Images Logic
-  const galleryItems: { type: 'astro' | 'standard', src: any, fullResSrc: string, title: string }[] = [];
-
-  if (f.images) {
-    for (const entry of f.images) {
-      const cleanPath = '/' + entry.src.replace(/^(\.\.\/)+/, '').replace(/^\//, '');
-      const matchingKeys = Object.keys(allImages).filter(key => key.startsWith(cleanPath));
-
-      if (matchingKeys.length > 0) {
-        matchingKeys.sort();
-        for (const key of matchingKeys) {
-          const isSingleFile = (key === cleanPath);
-          const autoTitle = formatTitleFromFilename(key);
-          const finalTitle = (isSingleFile && entry.title) ? entry.title : autoTitle;
-          const originalImg = allImages[key].default;
-
-          // OPTIMIZATION: Generate a high-quality WebP for the Lightbox
-          const optimizedFull = await getImage({
-            src: originalImg,
-            format: 'webp',
-            width: 1600,
-            quality: 85
-          });
-
-          galleryItems.push({
-            type: 'astro',
-            src: originalImg, 
-            fullResSrc: optimizedFull.src, 
-            title: finalTitle
-          });
-        }
-      } else {
-        // Standard external images
-        galleryItems.push({
-          type: 'standard',
-          src: entry.src,
-          fullResSrc: entry.src,
-          title: entry.title || ''
-        });
-      }
+const cards = await Promise.all(festivals.map(async (f) => {
+  // An entry is a single image or a folder; folders contribute every image in them
+  const photos: { src: ImageMetadata; full: string; title: string; ratio: number }[] = [];
+  for (const entry of f.images ?? []) {
+    const path = '/' + entry.src.replace(/^(\.\.\/)+/, '').replace(/^\//, '');
+    const keys = Object.keys(allImages).filter((key) => key === path || key.startsWith(path + '/')).sort();
+    for (const key of keys) {
+      const src = allImages[key].default;
+      const full = await getImage({ src, format: 'webp', width: 1600, quality: 80 });
+      // EXIF orientations 5-8 are rotated a quarter turn, so width and height swap
+      const turned = (src.orientation ?? 1) >= 5;
+      const ratio = turned ? src.height / src.width : src.width / src.height;
+      photos.push({ src, full: full.src, ratio, title: key === path && entry.title ? entry.title : titleFromFilename(key) });
     }
   }
 
-  return { ...f, bg, text, sponsorImageModule, galleryItems };
+  const poster = f.video ? posterFor(f.video) : undefined;
+  const portrait = !!poster && poster.height > poster.width;
+  const shown = f.video ? SHOWN_WITH_VIDEO : photos.length;
+
+  return {
+    ...f,
+    id: slugify(f.name),
+    dates: dateRange(f),
+    ticket: ticketFor(f),
+    accent: f.text || '#374151',
+    band: f.bg || '#f3f4f6',
+    logoImage: f.logo ? allImages[`/src/assets/${f.logo}`]?.default : undefined,
+    sponsorImage: f.sponsor ? allImages[`/src/assets/${f.sponsor}`]?.default : undefined,
+    year: f.start ? new Date(f.start).getFullYear() : '',
+    photos,
+    shown,
+    poster,
+    portrait,
+  };
 }));
 ---
-<>
-  <ul class="timeline-wrapper">
-    {processedFestivals.map((f, festivalIdx) => {
-      // Calculate Year for Video Button
-      const year = f.start ? new Date(f.start).getFullYear() : '';
-      
-      return (
-        <li id={slugify(f.name)} class="timeline-item">
-          <span class="timeline-connector"></span>
-          <span class="timeline-branch-circle"></span>
-
-          <div class="timeline-card" style={`background-color:${f.bg}; color:${f.text}`}>
-            
-            {/* HEADER */}
-            <div class="flex items-center gap-4 mb-2">
-              {f.logo && (
-                 <Image
-                   src={`/src/assets/${f.logo}`}
-                   alt={`${f.name} logo`}
-                   width={56} height={56}
-                   class="object-contain shrink-0"
-                 />
-              )}
-              <div>
-                <h3 class="text-lg font-semibold leading-tight">{f.name}</h3>
-                <p class="text-sm opacity-80">
-                  {f.start && f.end ? (
-                    <>
-                      {new Date(f.start).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                      &nbsp;–&nbsp;
-                      {new Date(f.end).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </>
-                  ) : (
-                    f.dates_note || 'Dates to be confirmed'
-                  )}
-                </p>
-              </div>
-            </div>
-
-            {/* BODY */}
-            <div class="flex flex-col sm:flex-row gap-4">
-              
-              {/* GALLERY */}
-              {f.galleryItems.length > 0 && (
-                <div
-                  class="gallery flex-shrink-0 w-full h-[150px] sm:w-[30%] sm:self-stretch sm:h-auto rounded-md overflow-hidden sm:overflow-y-auto"
-                  data-festival-index={festivalIdx}
-                  style={`--card-bg: ${f.bg};`}
-                >
-                  <div class="flex flex-row sm:flex-col gap-2 p-1 h-full w-full overflow-x-auto sm:overflow-x-hidden sm:overflow-y-auto snap-x sm:snap-y snap-mandatory">
-                    
-                    {f.galleryItems.map((item, i) => {
-                      return (
-                      <div key={i} class="relative flex-none h-full w-auto sm:w-full sm:h-auto snap-center group">
-                        {item.type === 'astro' ? (
-                          <Image
-                            src={item.src}
-                            alt={item.title}
-                            width={600}
-                            densities={[1.5, 2]}
-                            class="flex-none rounded-md cursor-pointer h-full w-auto object-contain sm:w-full sm:h-auto sm:object-cover"
-                            data-title={item.title}
-                            data-index={i}
-                            data-full-src={item.fullResSrc} 
-                          />
-                        ) : (
-                          <img
-                            src={item.src} 
-                            alt={item.title}
-                            class="flex-none rounded-md cursor-pointer h-full w-auto object-contain sm:w-full sm:h-auto sm:object-cover"
-                            data-title={item.title}
-                            data-index={i}
-                            data-full-src={item.fullResSrc}
-                            loading="lazy"
-                          />
-                        )}
-                        <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-md pointer-events-none">
-                          <span class="text-white text-sm px-2 text-center">{item.title}</span>
-                        </div>
-                      </div>
-                    )})}
-                  </div>
-                </div>
-              )}
-
-              {/* TEXT / VIDEO */}
-              <div class={`timeline-text flex-1 min-h-0 ${f.galleryItems.length ? 'sm:pl-1' : ''}`}>
-                {f.description && (
-                  <p class="text-justify whitespace-pre-line">{f.description}</p>
-                )}
-                
-                {f.sponsorImageModule && (
-                  <div class="mt-4 border-t border-dashed border-gray-400 pt-4 flex justify-center">
-                    <Image
-                      src={f.sponsorImageModule.default}
-                      alt={`${f.name} sponsor logo`}
-                      width={150} height={100}
-                      class="object-contain"
-                    />
-                  </div>
-                )}
-
-                {/* VIDEO WRAPPER */}
-                {/* Removed aspect-ratio constraint so video defines size naturally */}
-                {f.video && (
-                  <div class="mt-4 relative w-full bg-black rounded-md overflow-hidden group video-wrapper">
-                    
-                    {/* Video: w-full and h-auto allows it to grow/shrink based on source aspect ratio */}
-                    <video
-                      src={f.video}
-                      class="w-full h-auto max-h-[80vh] object-contain block"
-                      preload="metadata"
-                      playsinline
-                    ></video>
-
-                    {/* Overlay: Absolute positioned to cover the video element */}
-                    <button
-                      class="absolute inset-0 w-full h-full flex flex-col items-center justify-center z-10 cursor-pointer focus:outline-none video-play-btn"
-                      aria-label="Play video"
-                      type="button"
-                    >
-                      {/* Visual Backdrop */}
-                      <div class="absolute inset-0 bg-black/30 backdrop-blur-[3px] group-hover:bg-black/40 group-hover:backdrop-blur-[5px] transition-all duration-500"></div>
-
-                      {/* Button Content */}
-                      <div class="relative z-20 flex flex-col items-center transform transition-transform duration-300 group-hover:scale-105">
-                         <div class="w-16 h-16 rounded-full bg-white/20 border-2 border-white backdrop-blur-md flex items-center justify-center mb-3 shadow-lg group-hover:bg-white/30 transition-colors">
-                           <svg class="w-8 h-8 text-white fill-current ml-1" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                         </div>
-                         <span class="text-white font-bold text-lg tracking-wide shadow-black drop-shadow-md px-4 text-center">
-                           See the {year} Video here!
-                         </span>
-                      </div>
-                    </button>
-                  </div>
-                )}
-
-                {f.link && (
-                  <div class="mt-4 text-center">
-                    <a
-                      href={f.link.url}
-                      class="inline-flex items-center gap-2 text-lg font-bold text-gray-500 hover:text-gray-600 underline-offset-4 hover:underline"
-                    >
-                      {f.link.text}
-                      <span aria-hidden="true" class="text-xl">↗︎</span>
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
+<ol class="tl">
+  {cards.map((c) => (
+    <li id={c.id} class="tl-item" style={`--accent: ${c.accent}; --band: ${c.band}`}>
+      <article class="tl-card">
+        <span class="tl-dot" aria-hidden="true"></span>
+        <header class="tl-head">
+          {c.logoImage && (
+            <Image src={c.logoImage} alt={`${c.name} logo`} width={64} densities={[1, 2]} class="tl-logo" />
+          )}
+          <div>
+            <h3 class="tl-name">{c.name}</h3>
+            <p class:list={['tl-dates', { 'sr-only': c.ticket }]}>{c.dates}</p>
           </div>
-        </li>
-      );
-    })}
-  </ul>
+          {c.ticket && (
+            <div class="tl-ticket tilt" aria-hidden="true">
+              <div class="tl-ticket-body">
+                <span class="tl-ticket-month">{c.ticket.month}</span>
+                <span class="tl-ticket-days">{c.ticket.days}</span>
+                <span class="tl-ticket-year">{c.ticket.year}</span>
+              </div>
+            </div>
+          )}
+        </header>
 
-  {/* LIGHTBOX HTML */}
-  <div id="lightbox" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center p-4">
-    <button id="lightbox-close" class="absolute top-4 right-4 text-white text-2xl font-bold focus:outline-none" aria-label="Close">&times;</button>
-    <button id="lightbox-prev" class="absolute left-4 top-1/2 transform -translate-y-1/2 p-4 focus:outline-none" aria-label="Previous Image"><span class="text-white text-3xl">&#10094;</span></button>
-    <button id="lightbox-next" class="absolute right-4 top-1/2 transform -translate-y-1/2 p-4 focus:outline-none" aria-label="Next Image"><span class="text-white text-3xl">&#10095;</span></button>
-    
-    <img id="lightbox-img" src="" alt="" class="max-h-full max-w-full rounded-md shadow-lg object-contain transition-all duration-300 ease-out" />
-    
-    <div id="lightbox-caption" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded"></div>
-  </div>
+        {c.description && <p class="tl-text">{c.description}</p>}
 
-  <script type="module">
-    // --- LIGHTBOX LOGIC ---
-    let currentGalleryImages = [];
-    let currentIndex = 0;
+        {(c.video || c.photos.length > 0) && (
+          <div class:list={['tl-media', { 'has-video': c.video, 'has-photos': c.photos.length, portrait: c.portrait }]} data-lightbox-group>
+            {c.video && (
+              <div
+                class="tl-video tilt"
+                style={c.poster ? `aspect-ratio: ${c.poster.width} / ${c.poster.height}` : 'aspect-ratio: 16 / 9'}
+              >
+                {c.poster && (
+                  <Image
+                    src={c.poster}
+                    alt={`${c.name} film`}
+                    widths={[400, 800, 1200]}
+                    sizes="(min-width: 768px) 55vw, 100vw"
+                    class="tl-video-poster"
+                    data-title={`${c.year} film`}
+                    data-video={c.video}
+                    data-hls={hlsUrl(c.video)}
+                    data-portrait={c.portrait || undefined}
+                  />
+                )}
+                <button type="button" class="tl-play" data-lightbox-open>
+                  <span class="tl-play-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" class="w-7 h-7 fill-current ml-1"><path d="M8 5v14l11-7z" /></svg>
+                  </span>
+                  <span>Watch the {c.year} film</span>
+                </button>
+              </div>
+            )}
 
-    const lightbox = document.getElementById('lightbox');
-    const lbImg = document.getElementById('lightbox-img');
-    const lbCaption = document.getElementById('lightbox-caption');
-    const btnClose = document.getElementById('lightbox-close');
-    const btnPrev = document.getElementById('lightbox-prev');
-    const btnNext = document.getElementById('lightbox-next');
+            {c.photos.length > 0 && (
+              <div
+                class:list={['tl-photos', c.video ? `count-${Math.min(c.photos.length, c.shown)}` : 'justified']}
+                style={c.video ? undefined : `--n: ${c.photos.length}; --sum: ${c.photos.reduce((t, p) => t + p.ratio, 0).toFixed(3)}`}
+              >
+                {c.photos.map((p, i) => (
+                  <figure class:list={['tl-photo tilt', { 'tl-hidden': i >= c.shown }]} style={`--r: ${p.ratio.toFixed(3)}`}>
+                    <Image
+                      src={p.src}
+                      alt={p.title}
+                      widths={[320, 640]}
+                      sizes={c.video ? "(min-width: 768px) 25vw, 50vw" : "(min-width: 768px) 400px, 60vw"}
+                      data-title={p.title}
+                      data-full-src={p.full}
+                    />
+                    {i === c.shown - 1 && c.photos.length > c.shown && (
+                      <span class="tl-more" aria-hidden="true">+{c.photos.length - c.shown}</span>
+                    )}
+                  </figure>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-    function openLightbox(galleryImgs, index) {
-      currentGalleryImages = galleryImgs;
-      currentIndex = index;
-      lightbox.classList.remove('hidden');
-      document.body.classList.add('overflow-hidden');
-      updateLightbox();
-    }
+        {c.sponsorImage && (
+          <div class="tl-sponsor">
+            <Image src={c.sponsorImage} alt={`${c.name} sponsor logo`} width={150} class="object-contain" />
+          </div>
+        )}
 
-    function closeLightbox() {
-      lightbox.classList.add('hidden');
-      document.body.classList.remove('overflow-hidden');
-      setTimeout(() => { lbImg.src = ''; }, 300);
-    }
+        {c.link && (
+          <a href={c.link.url} class="tl-link">
+            {c.link.text} <span aria-hidden="true">↗</span>
+          </a>
+        )}
+      </article>
+    </li>
+  ))}
+</ol>
 
-    function updateLightbox() {
-      if (!currentGalleryImages[currentIndex]) return;
-      const { fullSrc, placeholder, title } = currentGalleryImages[currentIndex];
+<Lightbox />
 
-      lbCaption.textContent = title || '';
-      btnPrev.style.display = currentIndex > 0 ? 'block' : 'none';
-      btnNext.style.display = currentIndex < currentGalleryImages.length - 1 ? 'block' : 'none';
 
-      if (lbImg.src !== fullSrc) {
-          lbImg.src = placeholder;
-          lbImg.style.filter = 'blur(10px)'; 
-          
-          const imgLoader = new Image();
-          imgLoader.src = fullSrc;
-          
-          imgLoader.onload = () => {
-               if (currentIndex !== -1 && currentGalleryImages[currentIndex].fullSrc === fullSrc) {
-                   lbImg.src = fullSrc;
-                   lbImg.style.filter = 'none';
-               }
-          };
-      } else {
-          lbImg.style.filter = 'none';
-      }
-    }
+<style>
+  /* full-width colour bands, softened with white so it doesn't read as a rainbow */
+  .tl {
+    position: relative;
+  }
+  .tl-item {
+    position: relative;
+    background: color-mix(in srgb, var(--band) 60%, white);
+  }
+  /* the content column; the line and dots live inside it so they stay
+     beside the photos on wide screens */
+  .tl-card {
+    position: relative;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 2.5rem 3.5rem;
+  }
+  .tl-card::before {
+    content: '';
+    position: absolute;
+    left: 1.45rem;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #9ca3af;
+  }
+  .tl-item:first-child .tl-card::before { top: 2.6rem; }
+  .tl-item:last-child .tl-card::before { bottom: auto; height: 3rem; }
+  .tl-dot {
+    position: absolute;
+    left: calc(1.45rem - 0.45rem);
+    top: 2.6rem;
+    z-index: 2;
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--band) 60%, white);
+    border: 2px solid var(--accent);
+  }
 
-    document.addEventListener('click', (e) => {
-      const clickedImg = e.target.closest('.gallery img');
-      if (!clickedImg) return;
-      
-      const galleryContainer = clickedImg.closest('.gallery');
-      
-      const imgs = Array.from(galleryContainer.querySelectorAll('img')).map((el) => ({
-        fullSrc: el.dataset.fullSrc || el.src, 
-        placeholder: el.currentSrc || el.src,
-        title: el.dataset.title || ''
-      }));
+  .tl-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .tl-head :global(.tl-logo) {
+    width: 3.5rem;
+    height: 3.5rem;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .tl-name {
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--accent);
+  }
+  /* ticket-stub dates: notched sides, a dashed perforation, slightly askew */
+  .tl-ticket {
+    --tilt: -4deg;
+    margin-left: auto;
+    flex-shrink: 0;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.18));
+  }
+  .tl-item:nth-child(even) .tl-ticket { --tilt: 3deg; }
+  .tl-ticket-body {
+    --notch: radial-gradient(circle at 0 50%, transparent 0.5rem, #000 0.53rem) left / 51% 100% no-repeat,
+             radial-gradient(circle at 100% 50%, transparent 0.5rem, #000 0.53rem) right / 51% 100% no-repeat;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.55rem 1.4rem 0.5rem;
+    white-space: nowrap;
+    border-radius: 0.5rem;
+    background: #fff;
+    color: var(--accent);
+    -webkit-mask: var(--notch);
+    mask: var(--notch);
+  }
+  .tl-ticket-body::before {
+    content: '';
+    position: absolute;
+    inset: 0.3rem 0.75rem;
+    border: 1.5px dashed color-mix(in srgb, var(--accent) 40%, transparent);
+    border-radius: 0.3rem;
+  }
+  .tl-ticket-month {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+  }
+  .tl-ticket-days {
+    font-family: 'Arial Black', Arial, sans-serif;
+    font-size: 1.9rem;
+    line-height: 1.05;
+  }
+  .tl-ticket-year {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+  }
+  @media (max-width: 640px) {
+    .tl-card { padding: 1.5rem 1rem 2rem 2.6rem; }
+    .tl-card::before { left: 1.1rem; }
+    .tl-dot { left: calc(1.1rem - 0.45rem); top: 2rem; }
+    .tl-head { gap: 0.6rem; }
+    .tl-head :global(.tl-logo) { width: 2.25rem; height: 2.25rem; }
+    .tl-name { font-size: 1rem; }
+    /* text stays inside the dashed line: padding is wider than its inset */
+    .tl-ticket-body { padding: 0.4rem 0.95rem 0.35rem; }
+    .tl-ticket-body::before { inset: 0.2rem 0.5rem; }
+    .tl-ticket-month { font-size: 0.6rem; }
+    .tl-ticket-days { font-size: 1rem; }
+    .tl-ticket-year { display: none; }
+    .tl-media { margin-top: 0.9rem; gap: 0.5rem; }
+    .tl-photos { gap: 0.4rem; }
+    .tl-photo, .tl-video { border-width: 3px; }
+  }
 
-      openLightbox(imgs, parseInt(clickedImg.dataset.index, 10));
-    });
+  .tl-dates {
+    display: inline-block;
+    margin-top: 0.35rem;
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: rgba(255, 255, 255, 0.7);
+  }
 
-    btnClose.addEventListener('click', closeLightbox);
-    btnPrev.addEventListener('click', () => { if (currentIndex > 0) { currentIndex--; updateLightbox(); } });
-    btnNext.addEventListener('click', () => { if (currentIndex < currentGalleryImages.length - 1) { currentIndex++; updateLightbox(); } });
-    lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
-    document.addEventListener('keydown', (e) => {
-      if (lightbox.classList.contains('hidden')) return;
-      if (e.key === 'Escape') closeLightbox();
-      else if (e.key === 'ArrowLeft' && currentIndex > 0) { currentIndex--; updateLightbox(); }
-      else if (e.key === 'ArrowRight' && currentIndex < currentGalleryImages.length - 1) { currentIndex++; updateLightbox(); }
-    });
+  .tl-text {
+    margin-top: 1rem;
+    max-width: 70ch;
+    line-height: 1.7;
+    white-space: pre-line;
+    color: #374151;
+  }
 
-    // --- MP4 VIDEO PLAYER LOGIC ---
-    document.querySelectorAll('.video-wrapper').forEach(wrapper => {
-      const video = wrapper.querySelector('video');
-      const btn = wrapper.querySelector('.video-play-btn');
+  /* ---------- media ---------- */
+  .tl-media {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .tl-media.has-video.has-photos { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; }
+    .tl-media.has-video.has-photos.portrait { grid-template-columns: auto minmax(0, 1fr); }
+  }
 
-      if(video && btn) {
-          btn.addEventListener('click', () => {
-              btn.style.opacity = '0';
-              btn.style.pointerEvents = 'none'; 
-              
-              video.controls = true;
-              video.play();
-          });
+  .tl-video {
+    position: relative;
+    width: 100%;
+    border-radius: 1rem;
+    overflow: hidden;
+    background: #111;
+  }
+  /* portrait films get a fixed width, so they sit beside the photos */
+  .portrait .tl-video {
+    width: min(100%, calc(min(70vh, 640px) * 9 / 16));
+    margin: 0 auto;
+  }
+  @media (min-width: 768px) {
+    .portrait.has-photos .tl-video { width: calc(min(70vh, 640px) * 9 / 16); }
+  }
+  .tl-video :global(.tl-video-poster) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
-          video.addEventListener('ended', () => {
-              video.controls = false;
-              // Resetting allows the overlay to come back neatly
-              video.load(); 
-              btn.style.opacity = '1';
-              btn.style.pointerEvents = 'auto';
-          });
-      }
-    });
-  </script>
+  .tl-play {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    color: #fff;
+    font-weight: 700;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.05) 60%);
+  }
+  .tl-play-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.12);
+    transition: transform 0.25s ease, background-color 0.25s ease;
+  }
+  .tl-video:hover .tl-play-icon,
+  .tl-play:focus-visible .tl-play-icon {
+    transform: scale(1.1);
+    background: var(--accent);
+  }
 
-  <script>
-    // --- SCROLL & CLAMPING LOGIC ---
-    function updateScrollIndicators(gallery) {
-      if (!gallery) return;
-      const scrollContainer = gallery.querySelector('div'); 
-      const hasHorizontalOverflow = scrollContainer.scrollWidth > scrollContainer.clientWidth + 1;
-      if (hasHorizontalOverflow) {
-        gallery.classList.add('is-scrollable-x');
-        const isAtEnd = scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 1;
-        gallery.classList.toggle('is-scrolled-to-end-x', isAtEnd);
-      } else {
-        gallery.classList.remove('is-scrollable-x', 'is-scrolled-to-end-x');
-      }
+  /* photo mosaic */
+  .tl-photos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .tl-photo {
+    position: relative;
+    margin: 0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    background: rgba(255, 255, 255, 0.5);
+  }
+  .tl-photo :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: zoom-in;
+  }
+  /* prints: white edge, a little shadow, each at its own slight angle */
+  .tl-photo,
+  .tl-video {
+    border: 4px solid #fff;
+    box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.35);
+  }
+  .tl-video { --tilt: -0.8deg; }
+  .tl-photo:nth-child(odd) { --tilt: -1.4deg; }
+  .tl-photo:nth-child(even) { --tilt: 1.2deg; }
+  .tl-photo:nth-child(3n) { --tilt: 0.6deg; }
+  .tl-photo:hover,
+  .tl-video:hover { box-shadow: 0 14px 30px -10px rgba(0, 0, 0, 0.45); z-index: 3; }
+  .tl-hidden { display: none; }
+  .tl-more {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+  }
 
-      const hasVerticalOverflow = scrollContainer.scrollHeight > scrollContainer.clientHeight + 1;
-      if (hasVerticalOverflow) {
-        gallery.classList.add('is-scrollable-y');
-        const isAtEnd = scrollContainer.scrollTop + scrollContainer.clientHeight >= scrollContainer.scrollHeight - 1;
-        gallery.classList.toggle('is-scrolled-to-end-y', isAtEnd);
-      } else {
-        gallery.classList.remove('is-scrollable-y', 'is-scrolled-to-end-y');
-      }
-    }
+  /* one photo fills the space; an odd count lets the first one lead */
+  .count-1 { grid-template-columns: 1fr; }
+  @media (min-width: 768px) {
+    .tl-media.has-video:has(.count-1) { align-items: stretch; }
+    .tl-media.has-video .count-1 .tl-photo { aspect-ratio: auto; height: 100%; }
+  }
+  .count-3 .tl-photo:first-child,
+  .count-5 .tl-photo:first-child { grid-column: span 2; aspect-ratio: 16 / 9; }
 
-    function computeTextVideoHeight(textPara, videoElement) {
-      const paraHeight = textPara.getBoundingClientRect().height;
-      if (!videoElement) return paraHeight;
-      // We read the actual height of the video container now, 
-      // since it is not fixed aspect ratio anymore.
-      const videoHeight = videoElement.offsetHeight;
-      return paraHeight + 16 + videoHeight;
-    }
+  /* Photos-only cards: justified rows. Each photo keeps its own shape and
+     grows in proportion to its width, so every row fills the card exactly
+     with no cropping or holes, at any screen size. */
+  .tl-photos.justified {
+    container-type: inline-size;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  /* Row height that fits every photo on one line (--sum is the photos'
+     combined width-to-height ratio); kept between 120 and 300px, so a
+     narrow screen wraps onto more rows instead of shrinking to slivers. */
+  .justified .tl-photo {
+    --row: clamp(120px, (100cqw - (var(--n) - 1) * 0.75rem) / var(--sum), 300px);
+  }
+  @media (max-width: 640px) {
+    .justified .tl-photo { --row: clamp(100px, (100cqw - (var(--n) - 1) * 0.4rem) / var(--sum), 300px); }
+  }
+  .justified .tl-photo {
+    flex: var(--r) 1 calc(var(--r) * var(--row));
+    aspect-ratio: var(--r);
+  }
+  /* lets a short last row stretch a little, but not into giant photos */
+  .tl-photos.justified::after {
+    content: '';
+    flex: 1 1 0;
+  }
 
-    function clampSingleGallery(item) {
-      const textPara    = item.querySelector('.timeline-text p');
-      const videoWrapper = item.querySelector('.video-wrapper');
-      const gallery     = item.querySelector('.gallery');
-      
-      if (!textPara || !gallery) return;
-      const imgs = gallery.querySelectorAll('img');
-
-      if (imgs.length === 1 && !videoWrapper) {
-        gallery.style.maxHeight = 'none';
-        const fullHeight = gallery.scrollHeight;
-        gallery.style.maxHeight = `${fullHeight}px`;
-      }
-      else if (videoWrapper) {
-        const needed = computeTextVideoHeight(textPara, videoWrapper);
-        const minHeight = gallery.offsetWidth * 0.67;
-        gallery.style.maxHeight = `${Math.max(needed, minHeight)}px`;
-      }
-      else {
-        const textHeight = textPara.getBoundingClientRect().height;
-        const minHeight = gallery.offsetWidth * 0.67;
-        gallery.style.maxHeight = `${Math.max(textHeight, minHeight)}px`;
-      }
-      gallery.classList.add('clamped');
-      updateScrollIndicators(gallery);
-    }
-
-    window.addEventListener('load', () => {
-      document.querySelectorAll('.timeline-item').forEach(item => {
-        const gallery = item.querySelector('.gallery');
-        clampSingleGallery(item);
-        if (gallery) {
-          gallery.querySelector('div').addEventListener('scroll', () => updateScrollIndicators(gallery), { passive: true });
-        }
-        const textPara = item.querySelector('.timeline-text p');
-        // Observe both text and video wrapper for size changes (loading metadata)
-        if (textPara) new ResizeObserver(() => clampSingleGallery(item)).observe(textPara);
-        
-        const videoWrapper = item.querySelector('.video-wrapper');
-        if (videoWrapper) new ResizeObserver(() => clampSingleGallery(item)).observe(videoWrapper);
-
-        window.addEventListener('resize', () => clampSingleGallery(item));
-      });
-    });
-  </script>
-
-  <style>
-    .gallery { position: relative; }
-    .gallery::after {
-      content: ''; position: absolute; z-index: 10; pointer-events: none; opacity: 0; transition: opacity 0.2s ease-in-out;
-    }
-    .gallery.is-scrollable-x::after {
-      top: 0; right: 0; bottom: 0; width: 40px; background: linear-gradient(to left, var(--card-bg), transparent); opacity: 1;
-    }
-    .gallery.is-scrollable-x.is-scrolled-to-end-x::after { opacity: 0; }
-    @media (min-width: 640px) {
-      .gallery.is-scrollable-y::after {
-        bottom: 0; left: 0; right: 0; height: 40px; background: linear-gradient(to top, var(--card-bg), transparent); opacity: 1;
-      }
-      .gallery.is-scrollable-y.is-scrolled-to-end-y::after { opacity: 0; }
-      .gallery.is-scrollable-x::after { opacity: 0; }
-    }
-  </style>
-</>
+  .tl-sponsor {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px dashed rgba(0, 0, 0, 0.15);
+    display: flex;
+    justify-content: center;
+  }
+  .tl-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1.25rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(255, 255, 255, 0.7);
+    transition: background-color 0.2s ease;
+  }
+  .tl-link:hover { background: #fff; }
+</style>

@@ -1,44 +1,181 @@
 ---
-
+/**
+ * Contact form (sent through Formspree). The "I'm a…" choice is sent with the
+ * message. Submits in place and shows a thank-you; without JavaScript it
+ * falls back to a normal form post.
+ */
+const reasons = ['Visitor', 'Festival', 'Scientist', 'Artist', 'Press', 'Other'];
 ---
 
-<div class="flex justify-center mt-6">
-  <div class="w-[90%] max-w-xl">
-    <form
-      class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
-      action="https://formspree.io/f/mnqelkgy"
-      method="POST"
-    >
-      <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
-          Your Email
+<div class="contact">
+  <form class="contact-form" action="https://formspree.io/f/mnqelkgy" method="POST">
+    <div class="contact-row">
+      <label>
+        <span>Name</span>
+        <input name="name" type="text" autocomplete="name" required placeholder="Your name" />
+      </label>
+      <label>
+        <span>Email</span>
+        <input name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+      </label>
+    </div>
+
+    <fieldset class="contact-reasons">
+      <legend>I'm a…</legend>
+      {reasons.map((reason, i) => (
+        <label class="pill">
+          <input type="radio" name="reason" value={reason} checked={i === 0} />
+          <span>{reason}</span>
         </label>
-        <input
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="email"
-          type="text"
-          placeholder="Your email address"
-        />
-      </div>
-      <div class="mb-6">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="message">
-          Message
-        </label>
-        <textarea
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-          id="message"
-          rows="10"
-          placeholder="Your message here"></textarea>
-      </div>
-      <div class="flex items-center justify-center">
-        <button
-        class="inline-flex items-center justify-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        type="button"
-        >
-          Send
-          <span class="material-symbols-outlined ml-2"> send </span>
-        </button>
-      </div>
-    </form>
-  </div>
+      ))}
+    </fieldset>
+
+    <label>
+      <span>Message</span>
+      <textarea name="message" rows="6" required placeholder="Tell us what you have in mind"></textarea>
+    </label>
+
+    <button type="submit" class="contact-send">
+      Send message
+      <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+    <p class="contact-status" role="status" aria-live="polite"></p>
+  </form>
 </div>
+
+<script>
+  // Send without leaving the page; on failure, say so and keep what they typed
+  const form = document.querySelector<HTMLFormElement>('.contact-form');
+  const status = form?.querySelector<HTMLElement>('.contact-status');
+  const button = form?.querySelector<HTMLButtonElement>('.contact-send');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    button!.disabled = true;
+    status!.textContent = 'Sending…';
+    status!.dataset.state = '';
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      form.reset();
+      status!.textContent = "Message sent, thank you! We'll get back to you soon.";
+      status!.dataset.state = 'ok';
+    } catch {
+      status!.textContent = "Sorry, that didn't send. Please try again in a moment.";
+      status!.dataset.state = 'error';
+    } finally {
+      button!.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  .contact {
+    display: grid;
+    width: min(46rem, 100% - 2rem);
+    margin: 0 auto 4rem;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 20px 45px -25px rgba(0, 0, 0, 0.45);
+  }
+
+  /* ---------- form ---------- */
+  .contact-form {
+    display: grid;
+    gap: 1.1rem;
+    padding: clamp(1.25rem, 4vw, 2.25rem);
+  }
+  .contact-row {
+    display: grid;
+    gap: 1.1rem;
+  }
+  @media (min-width: 520px) {
+    .contact-row { grid-template-columns: 1fr 1fr; }
+  }
+  .contact-form label > span,
+  .contact-reasons legend {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+  }
+  .contact-form input[type='text'],
+  .contact-form input[type='email'],
+  .contact-form textarea {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 0.7rem;
+    background: #f9fafb;
+    color: #111827;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+  .contact-form input:focus,
+  .contact-form textarea:focus {
+    outline: 2px solid #ec4899;
+    outline-offset: 1px;
+    border-color: #f472b6;
+    background: #fff;
+  }
+  .contact-form textarea { resize: vertical; }
+
+  /* "I'm a…" choice pills */
+  .contact-reasons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+    gap: 0.5rem;
+    border: 0;
+    padding: 0;
+  }
+  .contact-reasons legend { grid-column: 1 / -1; float: left; width: 100%; }
+  .pill input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .pill span {
+    display: block;
+    text-align: center;
+    padding: 0.4rem 0.9rem;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4b5563;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .pill:hover span { border-color: #f472b6; }
+  .pill input:checked + span {
+    color: #fff;
+    border-color: transparent;
+    background: linear-gradient(90deg, #f59e0b, #ec4899) border-box;
+  }
+  .pill input:focus-visible + span { outline: 2px solid #ec4899; outline-offset: 2px; }
+
+  .contact-send {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 700;
+    color: #fff;
+    background: #1f2937;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+  .contact-send:hover,
+  .contact-send:focus-visible { background: #dc2626; transform: translateY(-1px); }
+  .contact-send:disabled { opacity: 0.6; cursor: wait; }
+
+  .contact-status { min-height: 1.5rem; font-weight: 600; color: #6b7280; }
+  .contact-status[data-state='ok'] { color: #047857; }
+  .contact-status[data-state='error'] { color: #b91c1c; }
+</style>
