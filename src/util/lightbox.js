@@ -63,8 +63,8 @@ export async function openGallery(items, startAt = 0, opener = null) {
   // Note this before anything moves focus
   const fromKeyboard = !!opener?.matches(':focus-visible');
   const GLightbox = await load();
-  // The player takes one shape per viewer; a gallery only ever holds one
-  // kind of film, so use portrait if its films are portrait
+  // Films open one at a time (Lightbox.astro), so the player's shape follows
+  // that film
   const portrait = items.some((item) => item.type === 'video' && item.portrait);
   const viewer = GLightbox({
     elements: items.map((item) =>
@@ -114,19 +114,13 @@ export async function openGallery(items, startAt = 0, opener = null) {
     blockSwipe(slideNode);
     if (slideIndex === viewer.index) start(slideIndex);
   });
-  // Arrowing to another slide: pause every film, then start the new one
-  viewer.on('slide_changed', ({ current }) => {
-    viewer.getAllPlayers && Object.values(viewer.getAllPlayers()).forEach((p) => p.pause());
-    start(current.slideIndex);
-  });
 
-  // Lets the styles size portrait films to the screen height and show the
-  // arrows on phones when there are films (Lightbox.astro), and moves keyboard
-  // focus into the viewer so Tab doesn't wander behind it
+
+  // Lets the styles size portrait films to the screen height (Lightbox.astro),
+  // and moves keyboard focus into the viewer so Tab doesn't wander behind it
   viewer.on('open', () => {
     const container = document.querySelector('.glightbox-container');
     container?.classList.toggle('is-portrait', portrait);
-    container?.classList.toggle('has-video', items.some((item) => item.type === 'video'));
     container?.querySelector('.gclose')?.focus();
   });
   viewer.on('close', () => {

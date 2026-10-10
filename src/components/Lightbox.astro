@@ -14,8 +14,10 @@
 
   const ITEMS = 'img:not([data-lightbox-skip])';
 
-  function itemsFor(group: Element) {
-    const imgs = Array.from(group.querySelectorAll<HTMLImageElement>(ITEMS));
+  function itemsFor(group: Element, film: HTMLImageElement | null) {
+    const imgs = film
+      ? [film]
+      : Array.from(group.querySelectorAll<HTMLImageElement>(ITEMS)).filter((img) => !img.dataset.video);
     const items = imgs.map((img) => {
       const title = img.dataset.title || img.alt || '';
       return img.dataset.video
@@ -35,7 +37,9 @@
       : target.querySelector(ITEMS) ?? target.parentElement?.querySelector(ITEMS)) as HTMLImageElement | null;
     if (!img) return;
     e.preventDefault();
-    const { imgs, items } = itemsFor(img.closest('[data-lightbox-group]')!);
+    // A film opens on its own; a photo opens with the other photos around it
+    const group = img.closest('[data-lightbox-group]')!;
+    const { imgs, items } = itemsFor(group, !!img.dataset.video ? img : null);
     openGallery(items, imgs.indexOf(img), target);
   }
 
@@ -88,24 +92,14 @@
   .glightbox-clean .gprev:hover { background: rgba(255, 255, 255, 0.25); }
   .glightbox-clean .gnext svg,
   .glightbox-clean .gprev svg { width: 14px; }
-  /* phones: swipe instead of arrows, except where there are films (they
-     can't be swiped, see lightbox.js) */
+  /* no faded arrows when there's nothing that way (e.g. a single film) */
+  .glightbox-clean .gnext.disabled,
+  .glightbox-clean .gprev.disabled { display: none; }
+
+  /* phones: swipe between photos instead of arrows */
   @media (max-width: 767px) {
-    .glightbox-clean:not(.has-video) .gnext,
-    .glightbox-clean:not(.has-video) .gprev { display: none; }
     .glightbox-clean .gnext,
-    .glightbox-clean .gprev {
-      position: fixed;
-      top: 50% !important;
-      bottom: auto !important;
-      transform: translateY(-50%);
-      width: 40px;
-      height: 40px;
-      z-index: 99998;
-      background: rgba(0, 0, 0, 0.45);
-    }
-    .glightbox-clean .gprev { left: 6px !important; }
-    .glightbox-clean .gnext { right: 6px !important; }
+    .glightbox-clean .gprev { display: none; }
   }
 
   /* captions: light text on the dark backdrop, not a white box */
