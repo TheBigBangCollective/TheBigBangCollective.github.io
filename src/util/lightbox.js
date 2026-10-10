@@ -46,6 +46,18 @@ function portraitWidth() {
   return `${Math.round(Math.min(window.innerWidth, window.innerHeight * 0.72 * 9 / 16))}px`;
 }
 
+// Swiping on a film fights with its controls (seeking, volume), so touches on
+// a film stop here and never reach the viewer's swipe handling; the player's
+// own controls still get them first
+function blockSwipe(slideNode) {
+  const media = slideNode?.querySelector('.gslide-video')?.closest('.gslide-media');
+  if (!media || media.dataset.noSwipe) return;
+  media.dataset.noSwipe = 'true';
+  for (const type of ['touchstart', 'touchmove', 'touchend']) {
+    media.addEventListener(type, (e) => e.stopPropagation(), { passive: true });
+  }
+}
+
 /** Open the viewer on `items`, starting at `startAt`; `opener` gets focus back on close. */
 export async function openGallery(items, startAt = 0, opener = null) {
   // Note this before anything moves focus
@@ -98,7 +110,8 @@ export async function openGallery(items, startAt = 0, opener = null) {
   };
   // The viewer also loads the slides either side in the background; only the
   // one on screen should play
-  viewer.on('slide_after_load', ({ slideIndex }) => {
+  viewer.on('slide_after_load', ({ slideIndex, slideNode }) => {
+    blockSwipe(slideNode);
     if (slideIndex === viewer.index) start(slideIndex);
   });
   // Arrowing to another slide: pause every film, then start the new one
@@ -107,11 +120,14 @@ export async function openGallery(items, startAt = 0, opener = null) {
     start(current.slideIndex);
   });
 
-  // Lets the styles size portrait films to the screen height (Lightbox.astro),
-  // and moves keyboard focus into the viewer so Tab doesn't wander behind it
+  // Lets the styles size portrait films to the screen height and show the
+  // arrows on phones when there are films (Lightbox.astro), and moves keyboard
+  // focus into the viewer so Tab doesn't wander behind it
   viewer.on('open', () => {
-    document.querySelector('.glightbox-container .gclose')?.focus();
-    document.querySelector('.glightbox-container')?.classList.toggle('is-portrait', portrait);
+    const container = document.querySelector('.glightbox-container');
+    container?.classList.toggle('is-portrait', portrait);
+    container?.classList.toggle('has-video', items.some((item) => item.type === 'video'));
+    container?.querySelector('.gclose')?.focus();
   });
   viewer.on('close', () => {
     // Keyboard users go back to where they were; mouse/touch users don't need

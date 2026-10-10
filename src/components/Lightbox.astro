@@ -88,10 +88,24 @@
   .glightbox-clean .gprev:hover { background: rgba(255, 255, 255, 0.25); }
   .glightbox-clean .gnext svg,
   .glightbox-clean .gprev svg { width: 14px; }
-  /* phones: swipe instead of arrows */
+  /* phones: swipe instead of arrows, except where there are films (they
+     can't be swiped, see lightbox.js) */
   @media (max-width: 767px) {
+    .glightbox-clean:not(.has-video) .gnext,
+    .glightbox-clean:not(.has-video) .gprev { display: none; }
     .glightbox-clean .gnext,
-    .glightbox-clean .gprev { display: none; }
+    .glightbox-clean .gprev {
+      position: fixed;
+      top: 50% !important;
+      bottom: auto !important;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      z-index: 99998;
+      background: rgba(0, 0, 0, 0.45);
+    }
+    .glightbox-clean .gprev { left: 6px !important; }
+    .glightbox-clean .gnext { right: 6px !important; }
   }
 
   /* captions: light text on the dark backdrop, not a white box */
